@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <OutputType>Library</OutputType>
     <Version>0.0.1.0</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
@@ -12,6 +13,10 @@
 
   <ItemGroup>
     <PackageReference Include="MudBlazor" Version="8.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\StrideEnchanted.Host\StrideEnchanted.Host.csproj" />
   </ItemGroup>
 
   <ItemGroup>

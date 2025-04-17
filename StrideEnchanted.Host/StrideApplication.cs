@@ -1,32 +1,33 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Stride.Games;
 
 namespace StrideEnchanted.Host;
 
-public sealed class StrideApplication : IHost, IAsyncDisposable
+public sealed class StrideApplication : IDisposable, IAsyncDisposable
 {
   #region Fields and Properties
 
   private readonly object locker = new();
   private readonly IHost host;
   private readonly GameBase game;
-  private readonly GameContext? gameContext;
 
-  private Task? gameRunningTask;
+  private GameContext? gameContext;
   private Task? hostStopingTask;
+
+  public IServiceProvider Services => this.host.Services;
 
   #endregion
 
   #region Constructor
 
-  internal StrideApplication(IHost host, GameBase game, GameContext? gameContext)
+  internal StrideApplication(IHost host, GameBase game)
   {
     this.host = host;
     this.game = game;
-    this.gameContext = gameContext;
   }
 
   #endregion
@@ -45,39 +46,48 @@ public sealed class StrideApplication : IHost, IAsyncDisposable
     return new StrideApplicationBuilder<TGame>(settings);
   }
 
-  public async Task RunAsync(CancellationToken cancellationToken = default)
+  public StrideApplication UseGameContext(GameContext? gameContext)
   {
-    this.gameRunningTask = this.RunGameAsync(cancellationToken);
-    await ((IHost)this).StartAsync(cancellationToken).ConfigureAwait(false);
-    await Task.WhenAll(this.WaitForShutdownAsync(cancellationToken), this.gameRunningTask).ConfigureAwait(false);
+    this.gameContext = gameContext;
+    return this;
   }
 
-  private Task RunGameAsync(CancellationToken cancellationToken)
+  public async Task RunAsync(CancellationToken cancellationToken = default)
+  {
+    var gameRunningTask = this.RunGame(cancellationToken);
+    var hostRunningTask = this.host.StartAsync(cancellationToken);
+    await gameRunningTask.ConfigureAwait(false);
+    await hostRunningTask.ConfigureAwait(false);
+    _ = this.StopHost(CancellationToken.None).ConfigureAwait(false);
+  }
+
+  private Task RunGame(CancellationToken cancellationToken)
   {
     this.game.WindowCreated += (windowCreatedEventOwner, windowCreatedEvent) =>
     {
       this.game.Window.Closing += (windowClosingEventOwner, windowClosingEvent) =>
       {
-        _ = this.StopInternal(CancellationToken.None);
+        _ = this.StopHost(CancellationToken.None);
       };
 
       this.game.Exiting += (gameExitingEventOwner, gameExitingEvent) =>
       {
-        _ = this.StopInternal(CancellationToken.None);
+        _ = this.StopHost(CancellationToken.None);
       };
     };
 
-    return Task.Run(() => this.game.Run(this.gameContext), cancellationToken);
+    var gameContext = this.gameContext ?? this.host.Services.GetService<GameContext>();
+    return Task.Run(() => this.game.Run(gameContext), cancellationToken);
   }
 
-  private Task StopInternal(CancellationToken cancellationToken)
+  private Task StopHost(CancellationToken cancellationToken)
   {
     if (this.hostStopingTask == null)
     {
       lock (this.locker)
       {
         if (this.hostStopingTask == null)
-          this.hostStopingTask = ((IHost)this).StopAsync(cancellationToken);
+          this.hostStopingTask = this.host.StopAsync(cancellationToken);
       }
     }
 
@@ -86,23 +96,10 @@ public sealed class StrideApplication : IHost, IAsyncDisposable
 
   #endregion
 
-  #region IHost
-
-  public IServiceProvider Services => this.host.Services;
-
-  Task IHost.StartAsync(CancellationToken cancellationToken)
-  {
-    return this.host.StartAsync(cancellationToken);
-  }
-
-  Task IHost.StopAsync(CancellationToken cancellationToken)
-  {
-    return this.host.StopAsync(cancellationToken);
-  }
+  #region IDisposable
 
   void IDisposable.Dispose()
   {
-    this.game.Dispose();
     this.host.Dispose();
   }
 
@@ -112,7 +109,6 @@ public sealed class StrideApplication : IHost, IAsyncDisposable
 
   public ValueTask DisposeAsync()
   {
-    this.game.Dispose();
     return ((IAsyncDisposable)this.host).DisposeAsync();
   }
 

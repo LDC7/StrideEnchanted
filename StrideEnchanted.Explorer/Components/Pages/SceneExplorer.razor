@@ -1,0 +1,69 @@
+﻿@page "/"
+@page "/sceneexplorer"
+
+@using Microsoft.AspNetCore.Components.Web
+@using MudBlazor
+@using Stride.Core
+@using Stride.Engine
+@using Stride.Games
+
+@inject IGame Game;
+
+<PageTitle>Scene Explorer</PageTitle>
+
+@if (!this.Game.IsRunning)
+{
+  <MudText Typo="@Typo.h3" GutterBottom="@true">Game is not running!</MudText>
+}
+else
+{
+  <MudGrid>
+
+    <MudItem xs="4">
+      <MudPaper Class="p-2" Elevation="1">
+        <MudText Typo="Typo.h6">Scene Hierarchy</MudText>
+        @if (this.rootScene == null)
+        {
+          <MudText Typo="Typo.h6">Root scene not defined!</MudText>
+        }
+        else
+        {
+          <MudTreeView T="@Stride.Core.ComponentBase"
+                       AutoExpand="@true"
+                       SelectionMode="@SelectionMode.SingleSelection"
+                       SelectedValue="@this.Selected">
+            <MudTreeViewItem Value="@this.rootScene" Text="@this.rootScene.Name" IconColor="@Color.Primary" Icon="@Icons.Material.Filled.LabelImportant">
+              @foreach (var childScene in this.rootScene.Children)
+              {
+                <MudTreeViewItem Value="@childScene.Name" Text="@childScene.Name" IconColor="@Color.Primary" Icon="@Icons.Material.Filled.LabelImportant" />
+              }
+              @foreach (var entity in this.rootScene.Entities)
+              {
+                <MudTreeViewItem Value="@entity" Text="@entity.Name" IconColor="@Color.Primary" Icon="@Icons.Material.Filled.Label" />
+              }
+            </MudTreeViewItem>
+          </MudTreeView>
+        }
+      </MudPaper>
+    </MudItem>
+
+    <MudItem xs="8">
+      <MudPaper Class="p-2" Elevation="1">
+        <MudText Typo="Typo.h6">Selected Item</MudText>
+        <MudText Typo="Typo.h6">@this.Selected?.Name</MudText>
+      </MudPaper>
+    </MudItem>
+
+  </MudGrid>
+}
+
+@code {
+  private Scene? rootScene = null;
+  private Stride.Core.ComponentBase? Selected { get; set; }
+
+  protected override Task OnInitializedAsync()
+  {
+    this.rootScene = this.Game.Services.GetService<SceneSystem>()?.SceneInstance?.RootScene;
+    return base.OnInitializedAsync();
+  }
+}

@@ -1,0 +1,66 @@
+﻿@using System.Reflection
+@using MudBlazor
+@using Stride.Engine
+@inject NavigationManager Navigation
+
+<MudGrid>
+  <MudItem xs="4">
+    <MudPaper Class="p-2" Elevation="1">
+      <MudText Typo="Typo.h6">Scene Hierarchy</MudText>
+      <EntityTree Nodes="@RootEntities" OnSelect="SelectEntity" />
+    </MudPaper>
+  </MudItem>
+
+  <MudItem xs="8">
+    <MudPaper Class="p-2" Elevation="1">
+      <MudText Typo="Typo.h6">Selected Entity</MudText>
+      @if (SelectedEntity is not null)
+      {
+        <MudText Typo="Typo.subtitle1">@SelectedEntity.Name</MudText>
+        @foreach (var comp in SelectedEntity.Components)
+        {
+          <MudDivider Class="my-2" />
+          <MudText Typo="Typo.subtitle2">@comp.GetType().Name</MudText>
+          @foreach (var prop in comp.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+          {
+            if (prop.CanRead)
+            {
+              <MudTextField Label="@prop.Name"
+                            Value="@GetValue(comp, prop)"
+                            ReadOnly="true"
+                            Class="my-1" />
+            }
+          }
+        }
+      }
+      else
+      {
+        <MudText>No entity selected.</MudText>
+      }
+    </MudPaper>
+  </MudItem>
+</MudGrid>
+
+@code {
+  [Parameter] public List<Entity> RootEntities { get; set; } = new();
+
+  private Entity? SelectedEntity;
+
+  private void SelectEntity(Entity entity)
+  {
+    this.SelectedEntity = entity;
+  }
+
+  private string? GetValue(object target, PropertyInfo prop)
+  {
+    try
+    {
+      var value = prop.GetValue(target);
+      return value?.ToString();
+    }
+    catch
+    {
+      return null;
+    }
+  }
+}

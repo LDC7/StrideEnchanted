@@ -1,37 +1,36 @@
 ﻿@using MudBlazor
+@using Stride.Games
 
 @inherits LayoutComponentBase
 
-<MudThemeProvider Theme="@_theme" IsDarkMode="_isDarkMode" />
+@inject IGame Game
+
+<MudThemeProvider Theme="@this.theme" IsDarkMode="@this.isDarkTheme" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 <MudLayout>
   <MudAppBar Elevation="1">
-    <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="@Color.Inherit" Edge="@Edge.Start" OnClick="@this.DrawerToggle" />
-    <MudText Typo="@Typo.h5" Class="ml-3">Application</MudText>
+    <MudText Typo="@Typo.h5" Class="ml-3">@this.Game.Window.Title</MudText>
+    <MudSpacer />
+    <NavMenu />
     <MudSpacer />
     <MudIconButton Icon="@this.DarkLightModeButtonIcon" Color="@Color.Inherit" OnClick="@this.DarkModeToggle" />
-    <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="@Color.Inherit" Edge="@Edge.End" />
   </MudAppBar>
-  <MudDrawer @bind-Open="@this._drawerOpen" ClipMode="@DrawerClipMode.Always" Elevation="2">
-    <NavMenu />
-  </MudDrawer>
   <MudMainContent Class="mt-16 pa-4">
     @Body
   </MudMainContent>
 </MudLayout>
 
 @code {
-  private bool _drawerOpen = true;
-  private bool _isDarkMode = true;
-  private MudTheme? _theme = null;
+  private bool isDarkTheme = true;
+  private MudTheme? theme = null;
 
   protected override void OnInitialized()
   {
     base.OnInitialized();
 
-    this._theme = new()
+    this.theme = new()
       {
         PaletteLight = _lightPalette,
         PaletteDark = _darkPalette,
@@ -39,15 +38,9 @@
       };
   }
 
-
-  private void DrawerToggle()
-  {
-    this._drawerOpen = !this._drawerOpen;
-  }
-
   private void DarkModeToggle()
   {
-    this._isDarkMode = !this._isDarkMode;
+    this.isDarkTheme = !this.isDarkTheme;
   }
 
   private readonly PaletteLight _lightPalette = new()
@@ -89,7 +82,7 @@
       OverlayLight = "#1e1e2d80",
     };
 
-  public string DarkLightModeButtonIcon => this._isDarkMode switch
+  public string DarkLightModeButtonIcon => this.isDarkTheme switch
   {
     true => Icons.Material.Rounded.AutoMode,
     false => Icons.Material.Outlined.DarkMode,

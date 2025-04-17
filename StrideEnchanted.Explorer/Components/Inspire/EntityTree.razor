@@ -1,0 +1,14 @@
+﻿@using MudBlazor
+@using Stride.Engine
+
+<MudList T="Entity" Dense="true">
+  @foreach (var entity in this.Nodes)
+  {
+    <EntityTreeNode Entity="entity" OnSelect="this.OnSelect" />
+  }
+</MudList>
+
+@code {
+  [Parameter] public List<Entity> Nodes { get; set; } = new();
+  [Parameter] public EventCallback<Entity> OnSelect { get; set; }
+}

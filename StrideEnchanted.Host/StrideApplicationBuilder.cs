@@ -35,6 +35,7 @@ internal sealed class StrideApplicationBuilder<TGame> : IStrideApplicationBuilde
   {
 #warning TODO: нужно перенести сервисы из Game.Services.
     var serviceCollection = this.hostApplicationBuilder.Services
+      .AddSingleton(this.hostApplicationBuilder.Services)
       .AddSingleton<TGame>()
       .AddSingleton<IGame>(static p => p.GetRequiredService<TGame>())
       .AddSingleton<GameBase>(static p => p.GetRequiredService<TGame>());
@@ -70,8 +71,7 @@ internal sealed class StrideApplicationBuilder<TGame> : IStrideApplicationBuilde
 
     var host = this.hostApplicationBuilder.Build();
     var game = host.Services.GetRequiredService<GameBase>();
-    var context = host.Services.GetService<GameContext>();
-    return new StrideApplication(host, game, context);
+    return new StrideApplication(host, game);
   }
 
   #endregion
