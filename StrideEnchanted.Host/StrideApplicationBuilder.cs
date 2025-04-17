@@ -10,7 +10,7 @@ using Stride.Games;
 namespace StrideEnchanted.Host;
 
 internal sealed class StrideApplicationBuilder<TGame> : IStrideApplicationBuilder
-  where TGame : class, IGame
+  where TGame : GameBase
 {
   #region Fields and Properties
 
@@ -23,7 +23,7 @@ internal sealed class StrideApplicationBuilder<TGame> : IStrideApplicationBuilde
 
   internal StrideApplicationBuilder(HostApplicationBuilderSettings settings)
   {
-    this.hostApplicationBuilder = new(settings);
+    this.hostApplicationBuilder = Microsoft.Extensions.Hosting.Host.CreateEmptyApplicationBuilder(settings);
     this.Initialize();
   }
 
@@ -34,10 +34,10 @@ internal sealed class StrideApplicationBuilder<TGame> : IStrideApplicationBuilde
   private void Initialize()
   {
 #warning TODO: нужно перенести сервисы из Game.Services.
-    this.hostApplicationBuilder.Services
+    var serviceCollection = this.hostApplicationBuilder.Services
       .AddSingleton<TGame>()
-      .AddSingleton<IGame>(p => p.GetRequiredService<TGame>())
-      .AddHostedService<GameHostedService<TGame>>();
+      .AddSingleton<IGame>(static p => p.GetRequiredService<TGame>())
+      .AddSingleton<GameBase>(static p => p.GetRequiredService<TGame>());
   }
 
   #endregion
@@ -68,8 +68,10 @@ internal sealed class StrideApplicationBuilder<TGame> : IStrideApplicationBuilde
       throw new InvalidOperationException("Host already builded.");
     this.isHostBuilded = true;
 
-    var internalHost = this.hostApplicationBuilder.Build();
-    return new StrideApplication(internalHost);
+    var host = this.hostApplicationBuilder.Build();
+    var game = host.Services.GetRequiredService<GameBase>();
+    var context = host.Services.GetService<GameContext>();
+    return new StrideApplication(host, game, context);
   }
 
   #endregion

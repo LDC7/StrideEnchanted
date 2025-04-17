@@ -1,10 +1,11 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Stride.Engine;
+
 using StrideEnchanted.Host;
 
-namespace StrideEnchanted.Example;
+namespace StrideEnchanted.Example.Windows;
 
-public sealed class Program
+public class Program
 {
   public static async Task Main(string[] args)
   {
