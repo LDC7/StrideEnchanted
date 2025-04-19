@@ -1,0 +1,65 @@
+﻿@using MudBlazor
+@using Stride.Engine
+
+<MudCard Class="p-2" Elevation="1">
+  <MudCardHeader>
+    <MudText Typo="@Typo.h6">Scene Hierarchy</MudText>
+  </MudCardHeader>
+  <MudCardContent>
+    @if (this.RootScene == null)
+    {
+      <MudText Typo="@Typo.h6">Root scene not defined!</MudText>
+    }
+    else
+    {
+      <MudTreeView T="@Stride.Core.ComponentBase"
+                   AutoExpand="@true"
+                   SelectionMode="@SelectionMode.SingleSelection"
+                   SelectedValue="@this.Selected">
+        <SceneTreeNodeItem Scene="@this.RootScene" OnSelect="@this.OnSelect" Selected="@this.Selected" />
+      </MudTreeView>
+    }
+  </MudCardContent>
+</MudCard>
+
+@code {
+  [Parameter]
+  [EditorRequired]
+  public SceneInstance? SceneInstance { get; set; }
+
+  [Parameter]
+  [EditorRequired]
+  public Stride.Core.ComponentBase? Selected { get; set; }
+
+  [Parameter]
+  [EditorRequired]
+  public EventCallback<Stride.Core.ComponentBase> OnSelect { get; set; }
+
+  private Scene? RootScene { get; set; }
+
+  public override async Task SetParametersAsync(ParameterView parameters)
+  {
+    var currentInstance = this.SceneInstance;
+    var newInstance = parameters.GetValueOrDefault<SceneInstance?>(nameof(this.SceneInstance), default);
+
+    if (currentInstance != newInstance && currentInstance != null)
+    {
+      currentInstance.RootSceneChanged -= this.HandleRootSceneChanged;
+    }
+
+    await base.SetParametersAsync(parameters);
+
+    if (currentInstance != newInstance)
+    {
+      this.RootScene = newInstance?.RootScene;
+      if (newInstance != null)
+        newInstance.RootSceneChanged += this.HandleRootSceneChanged;
+    }
+  }
+
+  private void HandleRootSceneChanged(object? sender, EventArgs args)
+  {
+    if (sender is SceneInstance instance)
+      this.RootScene = instance.RootScene;
+  }
+}

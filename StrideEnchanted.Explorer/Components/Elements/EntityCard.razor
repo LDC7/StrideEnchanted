@@ -1,0 +1,23 @@
+﻿@using MudBlazor
+@using System.Reflection
+@using Stride.Engine
+
+<MudCard Class="p-2" Elevation="1">
+  <MudCardHeader>
+    <MudText Typo="@Typo.h6">@this.Entity.Name</MudText>
+  </MudCardHeader>
+  <MudCardContent>
+    <MudExpansionPanels MultiExpansion="true">
+      @foreach (var component in this.Entity.Components)
+      {
+        <EntityComponentWidget Component="@component" />
+      }
+    </MudExpansionPanels>
+  </MudCardContent>
+</MudCard>
+
+@code {
+  [Parameter]
+  [EditorRequired]
+  public required Entity Entity { get; set; } = default!;
+}

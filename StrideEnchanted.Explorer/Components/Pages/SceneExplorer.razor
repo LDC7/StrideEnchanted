@@ -6,6 +6,8 @@
 @using Stride.Core
 @using Stride.Engine
 @using Stride.Games
+@using StrideEnchanted.Explorer.Components.Elements
+@using System.Reflection
 
 @inject IGame Game;
 
@@ -20,50 +22,40 @@ else
   <MudGrid>
 
     <MudItem xs="4">
-      <MudPaper Class="p-2" Elevation="1">
-        <MudText Typo="Typo.h6">Scene Hierarchy</MudText>
-        @if (this.rootScene == null)
-        {
-          <MudText Typo="Typo.h6">Root scene not defined!</MudText>
-        }
-        else
-        {
-          <MudTreeView T="@Stride.Core.ComponentBase"
-                       AutoExpand="@true"
-                       SelectionMode="@SelectionMode.SingleSelection"
-                       SelectedValue="@this.Selected">
-            <MudTreeViewItem Value="@this.rootScene" Text="@this.rootScene.Name" IconColor="@Color.Primary" Icon="@Icons.Material.Filled.LabelImportant">
-              @foreach (var childScene in this.rootScene.Children)
-              {
-                <MudTreeViewItem Value="@childScene.Name" Text="@childScene.Name" IconColor="@Color.Primary" Icon="@Icons.Material.Filled.LabelImportant" />
-              }
-              @foreach (var entity in this.rootScene.Entities)
-              {
-                <MudTreeViewItem Value="@entity" Text="@entity.Name" IconColor="@Color.Primary" Icon="@Icons.Material.Filled.Label" />
-              }
-            </MudTreeViewItem>
-          </MudTreeView>
-        }
-      </MudPaper>
+      <StrideEnchanted.Explorer.Components.Elements.SceneExplorerTree.Component SceneInstance="@this.sceneSystem.SceneInstance"
+                                                                                Selected="@this.Selected"
+                                                                                OnSelect="@this.HandleSelect" />
     </MudItem>
 
     <MudItem xs="8">
-      <MudPaper Class="p-2" Elevation="1">
-        <MudText Typo="Typo.h6">Selected Item</MudText>
-        <MudText Typo="Typo.h6">@this.Selected?.Name</MudText>
-      </MudPaper>
+      @if (this.Selected is Scene selectedScene)
+      {
+        <SceneCard Scene="@selectedScene" />
+      }
+
+      @if (this.Selected is Entity selectedEntity)
+      {
+        <EntityCard Entity="@selectedEntity" />
+      }
     </MudItem>
 
   </MudGrid>
 }
 
 @code {
-  private Scene? rootScene = null;
+  private SceneSystem sceneSystem = null!;
+
   private Stride.Core.ComponentBase? Selected { get; set; }
 
   protected override Task OnInitializedAsync()
   {
-    this.rootScene = this.Game.Services.GetService<SceneSystem>()?.SceneInstance?.RootScene;
+    this.sceneSystem = this.Game.Services.GetSafeServiceAs<SceneSystem>();
     return base.OnInitializedAsync();
+  }
+
+  private Task HandleSelect(Stride.Core.ComponentBase selected)
+  {
+    this.Selected = selected;
+    return Task.CompletedTask;
   }
 }

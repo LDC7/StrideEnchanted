@@ -1,0 +1,37 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@using MudBlazor
+@using Stride.Engine
+
+<MudTreeViewItem id="@this.Entity.Id"
+                 Value="@this.Entity"
+                 Text="@this.Entity.Name"
+                 IconColor="@Color.Primary"
+                 Icon="@Icons.Material.Filled.Label"
+                 Selected="@(this.Entity == this.Selected)"
+                 OnClick="@this.HandleClick">
+  <MudList T="Stride.Core.ComponentBase" Dense="true" Class="ml-4" SelectedValue="@this.Selected">
+    @foreach (var childEntity in this.Entity.GetChildren())
+    {
+      <EntityTreeNodeItem Entity="@childEntity" OnSelect="@this.OnSelect" Selected="@this.Selected" />
+    }
+  </MudList>
+</MudTreeViewItem>
+
+@code {
+  [Parameter]
+  [EditorRequired]
+  public required Entity Entity { get; set; } = default!;
+
+  [Parameter]
+  [EditorRequired]
+  public required Stride.Core.ComponentBase? Selected { get; set; }
+
+  [Parameter]
+  [EditorRequired]
+  public EventCallback<Stride.Core.ComponentBase> OnSelect { get; set; }
+
+  private Task HandleClick(MouseEventArgs args)
+  {
+    return this.OnSelect.InvokeAsync(this.Entity);
+  }
+}

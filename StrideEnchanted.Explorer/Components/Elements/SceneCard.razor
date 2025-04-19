@@ -1,0 +1,17 @@
+﻿@using MudBlazor
+@using System.Reflection
+@using Stride.Engine
+
+<MudCard Class="p-2" Elevation="1">
+  <MudCardHeader>
+    <MudText Typo="@Typo.h6">@this.Scene.Name</MudText>
+  </MudCardHeader>
+  <MudCardContent>
+  </MudCardContent>
+</MudCard>
+
+@code {
+  [Parameter]
+  [EditorRequired]
+  public required Scene Scene { get; set; } = default!;
+}
