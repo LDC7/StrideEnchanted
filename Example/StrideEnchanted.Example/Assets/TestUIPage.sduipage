@@ -1,0 +1,57 @@
+!UIPageAsset
+Id: 1e81972d-ca5e-4411-b224-6bbe4acbf7dc
+SerializedVersion: {Stride: 2.1.0.1}
+Tags: []
+Design:
+    Resolution: {X: 1280.0, Y: 720.0, Z: 1000.0}
+Hierarchy:
+    RootParts:
+        - !Grid ref!! 5d117cbf-887a-4ec7-a3ae-feee66f81891
+    Parts:
+        -   UIElement: !TextBlock
+                Id: 0f7e7b03-b3bf-420e-9f33-b2bf65f803dc
+                DependencyProperties: {}
+                BackgroundColor: {R: 0, G: 0, B: 0, A: 0}
+                HorizontalAlignment: Center
+                VerticalAlignment: Center
+                Margin: {}
+                MaximumWidth: 3.4028235E+38
+                MaximumHeight: 3.4028235E+38
+                MaximumDepth: 3.4028235E+38
+                Text: Add Child Sphere
+                Font: c90f3988-0544-4cbe-993f-13af7d9c23c6:StrideDefaultFont
+                TextSize: 20.0
+                TextColor: {R: 240, G: 240, B: 240, A: 255}
+                OutlineColor: {R: 0, G: 0, B: 0, A: 255}
+                OutlineThickness: 0.0
+        -   UIElement: !Grid
+                Id: 5d117cbf-887a-4ec7-a3ae-feee66f81891
+                DependencyProperties: {}
+                BackgroundColor: {R: 0, G: 0, B: 0, A: 0}
+                Margin: {}
+                Children:
+                    dc332aea6ab881d3414fde20881eeaaa: !Button ref!! a193b967-8f3c-4db5-9d04-ee79efe07702
+                RowDefinitions: {}
+                ColumnDefinitions: {}
+                LayerDefinitions: {}
+        -   UIElement: !Button
+                Id: a193b967-8f3c-4db5-9d04-ee79efe07702
+                DependencyProperties: {}
+                BackgroundColor: {R: 0, G: 0, B: 0, A: 255}
+                DrawLayerNumber: 2
+                HorizontalAlignment: Left
+                VerticalAlignment: Top
+                Margin: {Left: 20.0, Top: 20.0}
+                MaximumWidth: 3.4028235E+38
+                MaximumHeight: 3.4028235E+38
+                MaximumDepth: 3.4028235E+38
+                Name: AddChildSphereButton
+                Content: !TextBlock ref!! 0f7e7b03-b3bf-420e-9f33-b2bf65f803dc
+                PressedImage: !SpriteFromSheet
+                    Sheet: 1be3340c-b797-4557-bff7-d9be92dfdb42:StrideUIDesigns
+                    CurrentFrame: 2
+                NotPressedImage: !SpriteFromSheet
+                    Sheet: 1be3340c-b797-4557-bff7-d9be92dfdb42:StrideUIDesigns
+                    CurrentFrame: 1
+                MouseOverImage: !SpriteFromSheet
+                    Sheet: 1be3340c-b797-4557-bff7-d9be92dfdb42:StrideUIDesigns

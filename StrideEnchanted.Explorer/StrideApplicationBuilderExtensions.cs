@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,14 +8,19 @@ using Microsoft.Extensions.Logging;
 using MudBlazor.Services;
 using Stride.Games;
 using StrideEnchanted.Explorer.Components;
+using StrideEnchanted.Explorer.Options;
 using StrideEnchanted.Host;
 
 namespace StrideEnchanted.Explorer;
 
 public static class StrideApplicationBuilderExtensions
 {
-  public static IStrideApplicationBuilder AddStrideExplorer(this IStrideApplicationBuilder builder)
+  public static IStrideApplicationBuilder AddStrideExplorer(this IStrideApplicationBuilder builder, Action<StrideExplorerOptions>? configureOptions = null)
   {
+    builder.Services.Configure<StrideExplorerOptions>(builder.Configuration.GetSection("StrideExplorer"));
+    if (configureOptions != null ) 
+      builder.Services.PostConfigure(configureOptions);
+
     builder.Services.AddHostedService(static provider =>
     {
       var webHostBuilder = new WebHostBuilder();

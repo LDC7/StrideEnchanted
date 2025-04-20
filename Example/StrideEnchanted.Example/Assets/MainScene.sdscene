@@ -11,6 +11,7 @@ Hierarchy:
         - ref!! de8ba774-391b-4a70-b73e-b4d0d9496420
         - ref!! 7e70ce27-a0e8-41e5-98b1-3863afe32d07
         - ref!! b8c9d471-885c-4aad-8bb4-3a4f2aa827de
+        - ref!! 783a8a5c-ff64-4caa-a974-549d92dae18b
     Parts:
         -   Entity:
                 Id: 264c34db-717e-4ead-805e-13d4cfc1801e
@@ -62,6 +63,25 @@ Hierarchy:
                                 BiasParameters: {}
                         Intensity: 20.0
         -   Entity:
+                Id: 783a8a5c-ff64-4caa-a974-549d92dae18b
+                Name: UI
+                Components:
+                    28697184eddeac0957f066d53dd9ed12: !TransformComponent
+                        Id: ce3b15db-fa20-4aba-9ebf-34894ce1c114
+                        Position: {X: 0.0, Y: 0.0, Z: 0.0}
+                        Rotation: {X: 0.0, Y: 0.0, Z: 0.0, W: 1.0}
+                        Scale: {X: 1.0, Y: 1.0, Z: 1.0}
+                        Children: {}
+                    9787fb697f9ef1cfb16f356afdaecfe6: !UIComponent
+                        Id: fc96eb14-7f43-43b0-864a-750760db0903
+                        Page: 1e81972d-ca5e-4411-b224-6bbe4acbf7dc:TestUIPage
+                        Resolution: {X: 1280.0, Y: 720.0, Z: 1000.0}
+                        Size: {X: 1.28, Y: 0.72, Z: 1.0}
+                    c8c49ca966718a4bca1375ca0b194c93: !StrideEnchanted.Example.UIScript,StrideEnchanted.Example
+                        Id: 38ff5eba-31fa-4525-9671-a11a09b59c40
+                        RootSphere: ref!! b8c9d471-885c-4aad-8bb4-3a4f2aa827de
+                        SpherePrefab: edfb63de-5cd3-4058-a73f-eb69f42ae66e:SpherePrefab
+        -   Entity:
                 Id: 7e70ce27-a0e8-41e5-98b1-3863afe32d07
                 Name: Ground
                 Components:
@@ -86,9 +106,13 @@ Hierarchy:
                         Scale: {X: 1.0, Y: 1.0, Z: 1.0}
                         Children: {}
                     f063c14eaa4c9ea8c871c1168272d9f4: !ModelComponent
-                        Id: e8e2ecba-4d26-4739-afdc-4a83705cfe8e
+                        Id: d292e588-025e-402b-adbf-264bcbad2170
                         Model: 44e23982-216e-4fe1-a9d8-dd564a2b5f41:Sphere
                         Materials: {}
+                    9e55cbf43421f12ce3756f401fdac7d8: !StrideEnchanted.Example.TestPropertyChangingScript,StrideEnchanted.Example
+                        Id: b8fdcf4e-478f-4546-bb8e-cf8f422c568d
+                        RandomFieldValue: 0
+                        RandomPropertyValue: 0
         -   Entity:
                 Id: de8ba774-391b-4a70-b73e-b4d0d9496420
                 Name: Skybox

@@ -1,0 +1,40 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.Extensions.Options
+@using MudBlazor
+@using Stride.Core
+@using Stride.Engine
+@using System.Reflection
+@using StrideEnchanted.Explorer.Options
+@using StrideEnchanted.Explorer.ViewModels
+
+@implements IDisposable
+
+@inject IOptions<StrideExplorerOptions> Options;
+
+<MudExpansionPanel Text="@this.Name" Expanded="@true">
+  @foreach (var parameter in this.viewModel?.Parameters ?? Array.Empty<IEntityComponentParameterViewModel>())
+  {
+    <EntityComponentParameterWidget ViewModel="parameter" />
+  }
+</MudExpansionPanel>
+
+@code {
+  private EntityComponentViewModel? viewModel;
+
+  [Parameter]
+  [EditorRequired]
+  public required EntityComponent Component { get; set; } = default!;
+
+  public string Name => this.viewModel?.Name ?? "Component";
+
+  protected override Task OnInitializedAsync()
+  {
+    this.viewModel = new EntityComponentViewModel(this.Component, this.Options);
+    return base.OnInitializedAsync();
+  }
+
+  public void Dispose()
+  {
+    this.viewModel?.Dispose();
+  }
+}
