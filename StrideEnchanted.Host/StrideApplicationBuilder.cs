@@ -6,6 +6,7 @@ using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Stride.Games;
+using StrideEnchanted.Host.Logging;
 
 namespace StrideEnchanted.Host;
 
@@ -33,9 +34,19 @@ internal sealed class StrideApplicationBuilder<TGame> : IStrideApplicationBuilde
 
   private void Initialize()
   {
+    this.hostApplicationBuilder.Configuration
+      .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+      .AddJsonFile($"appsettings.{this.hostApplicationBuilder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+      .AddEnvironmentVariables();
+
+    this.hostApplicationBuilder.Logging
+      .ClearProviders()
+      .AddProvider(new StrideLoggerProvider());
+
 #warning TODO: нужно перенести сервисы из Game.Services.
     var serviceCollection = this.hostApplicationBuilder.Services
       .AddSingleton(this.hostApplicationBuilder.Services)
+      .AddSingleton<IConfigurationManager>(this.hostApplicationBuilder.Configuration)
       .AddSingleton<TGame>()
       .AddSingleton<IGame>(static p => p.GetRequiredService<TGame>())
       .AddSingleton<GameBase>(static p => p.GetRequiredService<TGame>());

@@ -8,6 +8,8 @@
 @using Stride.Games
 @using StrideEnchanted.Explorer.Components.Elements
 @using System.Reflection
+@using StrideEnchanted.Explorer.Interfaces
+@using StrideEnchanted.Explorer.Services
 
 @inject IGame Game;
 
@@ -22,20 +24,20 @@ else
   <MudGrid>
 
     <MudItem xs="4">
-      <StrideEnchanted.Explorer.Components.Elements.SceneExplorerTree.Component SceneInstance="@this.sceneSystem.SceneInstance"
-                                                                                Selected="@this.Selected"
-                                                                                OnSelect="@this.HandleSelect" />
+      <StrideEnchanted.Explorer.Components.Elements.SceneExplorerTree.ComponentView SceneInstance="@this.sceneSystem.SceneInstance"
+                                                                                    Selected="@this.Selected"
+                                                                                    OnSelect="@this.HandleSelect" />
     </MudItem>
 
     <MudItem xs="8">
-      @if (this.Selected is Scene selectedScene)
+      @if (this.Selected is ITrackedScene selectedScene)
       {
-        <SceneCard Scene="@selectedScene" />
+        <SceneCardView Scene="@selectedScene" />
       }
 
-      @if (this.Selected is Entity selectedEntity)
+      @if (this.Selected is ITrackedEntity selectedEntity)
       {
-        <StrideEnchanted.Explorer.Components.Elements.EntityCard.Component Entity="@selectedEntity" />
+        <StrideEnchanted.Explorer.Components.Elements.EntityCard.ComponentView Entity="@selectedEntity" />
       }
     </MudItem>
 
@@ -45,7 +47,7 @@ else
 @code {
   private SceneSystem sceneSystem = null!;
 
-  private Stride.Core.ComponentBase? Selected { get; set; }
+  private object? Selected { get; set; }
 
   protected override Task OnInitializedAsync()
   {
@@ -53,7 +55,7 @@ else
     return base.OnInitializedAsync();
   }
 
-  private Task HandleSelect(Stride.Core.ComponentBase selected)
+  private Task HandleSelect(object? selected)
   {
     this.Selected = selected;
     return Task.CompletedTask;

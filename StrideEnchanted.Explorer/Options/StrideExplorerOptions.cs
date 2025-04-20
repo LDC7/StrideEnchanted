@@ -4,5 +4,5 @@ namespace StrideEnchanted.Explorer.Options;
 
 public sealed class StrideExplorerOptions
 {
-  public TimeSpan RefreshViewTime { get; set; } = TimeSpan.FromSeconds(1);
+  public TimeSpan DataTrackingTimer { get; set; } = TimeSpan.FromSeconds(1);
 }

@@ -1,6 +1,5 @@
 ﻿@using MudBlazor
-@using System.Reflection
-@using Stride.Engine
+@using StrideEnchanted.Explorer.Interfaces
 
 <MudCard Class="p-2" Elevation="1">
   <MudCardHeader>
@@ -10,7 +9,7 @@
     <MudExpansionPanels MultiExpansion="true">
       @foreach (var component in this.Entity.Components)
       {
-        <EntityComponentWidget Component="@component" />
+        <EntityComponentView Component="@component" />
       }
     </MudExpansionPanels>
   </MudCardContent>
@@ -19,5 +18,5 @@
 @code {
   [Parameter]
   [EditorRequired]
-  public required Entity Entity { get; set; } = default!;
+  public required ITrackedEntity Entity { get; set; } = default!;
 }

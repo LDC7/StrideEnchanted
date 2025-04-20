@@ -1,0 +1,58 @@
+﻿@using MudBlazor
+@using Stride.Engine
+@using StrideEnchanted.Explorer.Models
+@using StrideEnchanted.Explorer.Services
+
+@implements IDisposable
+
+@inject DataTrackingTimer Timer;
+
+<MudCard Class="p-2" Elevation="1">
+  <MudCardHeader>
+    <MudText Typo="@Typo.h6">Scene Hierarchy</MudText>
+  </MudCardHeader>
+  <MudCardContent>
+    @if (this.trackedSceneInstance.RootScene == null)
+    {
+      <MudText Typo="@Typo.h6">Root scene not defined!</MudText>
+    }
+    else
+    {
+      <MudTreeView T="@object"
+                   AutoExpand="@true"
+                   SelectionMode="@SelectionMode.SingleSelection"
+                   SelectedValue="@this.Selected">
+        <SceneTreeNodeItemView Scene="@this.trackedSceneInstance.RootScene"
+                               OnSelect="@this.OnSelect"
+                               Selected="@this.Selected" />
+      </MudTreeView>
+    }
+  </MudCardContent>
+</MudCard>
+
+@code {
+  private TrackedSceneInstance trackedSceneInstance = default!;
+
+  [Parameter]
+  [EditorRequired]
+  public SceneInstance SceneInstance { get; set; } = default!;
+
+  [Parameter]
+  [EditorRequired]
+  public object? Selected { get; set; }
+
+  [Parameter]
+  [EditorRequired]
+  public EventCallback<object> OnSelect { get; set; }
+
+  protected override Task OnInitializedAsync()
+  {
+    this.trackedSceneInstance = new TrackedSceneInstance(this.SceneInstance, this.Timer);
+    return base.OnInitializedAsync();
+  }
+
+  public void Dispose()
+  {
+    this.trackedSceneInstance.Dispose();
+  }
+}

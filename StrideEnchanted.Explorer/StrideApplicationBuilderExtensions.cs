@@ -9,16 +9,19 @@ using MudBlazor.Services;
 using Stride.Games;
 using StrideEnchanted.Explorer.Components;
 using StrideEnchanted.Explorer.Options;
+using StrideEnchanted.Explorer.Services;
 using StrideEnchanted.Host;
 
 namespace StrideEnchanted.Explorer;
 
 public static class StrideApplicationBuilderExtensions
 {
-  public static IStrideApplicationBuilder AddStrideExplorer(this IStrideApplicationBuilder builder, Action<StrideExplorerOptions>? configureOptions = null)
+  public static IStrideApplicationBuilder AddStrideExplorer(
+    this IStrideApplicationBuilder builder,
+    Action<StrideExplorerOptions>? configureOptions = null)
   {
     builder.Services.Configure<StrideExplorerOptions>(builder.Configuration.GetSection("StrideExplorer"));
-    if (configureOptions != null ) 
+    if (configureOptions != null)
       builder.Services.PostConfigure(configureOptions);
 
     builder.Services.AddHostedService(static provider =>
@@ -26,25 +29,38 @@ public static class StrideApplicationBuilderExtensions
       var webHostBuilder = new WebHostBuilder();
 
       var environment = provider.GetRequiredService<IHostEnvironment>();
-      var configuration = provider.GetRequiredService<IConfiguration>();
+#warning TODO: Разобраться, почему не приходят настройки из файла.
+      var configurationManager = provider.GetRequiredService<IConfigurationManager>();
+      var loggerProviders = provider.GetServices<ILoggerProvider>();
 
       webHostBuilder
         .UseContentRoot(environment.ContentRootPath)
         .ConfigureAppConfiguration(configBuilder =>
         {
-          configBuilder.AddConfiguration(configuration);
+          configBuilder.Sources.Clear();
+          foreach (var source in configurationManager.Sources)
+            configBuilder.Sources.Add(source);
+
+          foreach (var property in configurationManager.Properties)
+            configBuilder.Properties[property.Key] = property.Value;
         });
 
-#warning TODO: Нужно использовать логирование, которое используется в хосте.
-      webHostBuilder.ConfigureLogging(static loggingBuilder =>
+      webHostBuilder.ConfigureLogging(loggingBuilder =>
       {
-        loggingBuilder.AddConsole();
+        loggingBuilder
+          .ClearProviders()
+          .AddFilter("Microsoft.AspNetCore", LogLevel.Warning);
+
+        foreach (var loggerProvider in loggerProviders)
+          loggingBuilder.AddProvider(loggerProvider);
       });
 
       webHostBuilder.ConfigureServices(services =>
       {
         var game = provider.GetRequiredService<IGame>();
-        services.AddSingleton(game);
+        services
+          .AddSingleton(game)
+          .AddSingleton<DataTrackingTimer>();
 
         services
           .AddRouting()
@@ -64,7 +80,7 @@ public static class StrideApplicationBuilderExtensions
 
       webHostBuilder.Configure(static app =>
       {
-        app.UseExceptionHandler("/Error");
+        app.UseExceptionHandler("/ErrorView");
         app.UseStaticFiles();
         app.UseRouting();
         app.UseAntiforgery();
@@ -72,7 +88,7 @@ public static class StrideApplicationBuilderExtensions
         app.UseEndpoints(endpoints =>
         {
           endpoints
-            .MapRazorComponents<App>()
+            .MapRazorComponents<AppView>()
             .AddInteractiveServerRenderMode();
         });
       });

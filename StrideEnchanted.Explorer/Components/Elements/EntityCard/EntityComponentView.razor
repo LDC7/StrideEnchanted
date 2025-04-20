@@ -1,0 +1,16 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@using MudBlazor
+@using StrideEnchanted.Explorer.Interfaces
+
+<MudExpansionPanel Text="@this.Component.Name" Expanded="@true">
+  @foreach (var parameter in this.Component.Parameters)
+  {
+    <EntityComponentParameterView Parameter="@parameter" />
+  }
+</MudExpansionPanel>
+
+@code {
+  [Parameter]
+  [EditorRequired]
+  public required ITrackedEntityComponent Component { get; set; } = default!;
+}

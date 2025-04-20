@@ -1,0 +1,31 @@
+﻿@using MudBlazor
+@using StrideEnchanted.Explorer.Interfaces
+@using System.ComponentModel
+
+@implements IDisposable
+
+<MudTextField Label="@this.Parameter.Name"
+              Value="@this.Parameter.Value"
+              ReadOnly="@true"
+              Class="my-1" />
+
+@code {
+  [Parameter]
+  [EditorRequired]
+  public required ITrackedEntityComponentParameter Parameter { get; set; } = default!;
+
+  protected override void OnInitialized()
+  {
+    this.Parameter.PropertyChanged += this.OnParamChanged;
+  }
+
+  private void OnParamChanged(object? sender, PropertyChangedEventArgs _)
+  {
+    InvokeAsync(this.StateHasChanged);
+  }
+
+  public void Dispose()
+  {
+    this.Parameter.PropertyChanged -= this.OnParamChanged;
+  }
+}

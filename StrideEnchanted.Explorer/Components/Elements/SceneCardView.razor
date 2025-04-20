@@ -1,6 +1,5 @@
 ﻿@using MudBlazor
-@using System.Reflection
-@using Stride.Engine
+@using StrideEnchanted.Explorer.Interfaces
 
 <MudCard Class="p-2" Elevation="1">
   <MudCardHeader>
@@ -13,5 +12,5 @@
 @code {
   [Parameter]
   [EditorRequired]
-  public required Scene Scene { get; set; } = default!;
+  public required ITrackedScene Scene { get; set; } = default!;
 }

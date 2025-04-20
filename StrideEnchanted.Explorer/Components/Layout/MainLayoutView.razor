@@ -13,12 +13,12 @@
   <MudAppBar Elevation="1">
     <MudText Typo="@Typo.h5" Class="ml-3">@this.Game.Window.Title</MudText>
     <MudSpacer />
-    <NavMenu />
+    <NavMenuView />
     <MudSpacer />
     <MudIconButton Icon="@this.DarkLightModeButtonIcon" Color="@Color.Inherit" OnClick="@this.DarkModeToggle" />
   </MudAppBar>
   <MudMainContent Class="mt-16 pa-4">
-    @Body
+    @this.Body
   </MudMainContent>
 </MudLayout>
 

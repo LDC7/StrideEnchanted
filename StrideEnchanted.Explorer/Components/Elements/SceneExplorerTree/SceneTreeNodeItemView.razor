@@ -1,6 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Components.Web
 @using MudBlazor
-@using Stride.Engine
+@using StrideEnchanted.Explorer.Interfaces
 
 <MudTreeViewItem id="@this.Scene.Id"
                  Value="@this.Scene"
@@ -11,26 +11,26 @@
                  OnClick="@this.HandleClick">
   @foreach (var childScene in this.Scene.Children)
   {
-    <SceneTreeNodeItem Scene="@childScene" OnSelect="@this.OnSelect" Selected="@this.Selected" />
+    <SceneTreeNodeItemView Scene="@childScene" OnSelect="@this.OnSelect" Selected="@this.Selected" />
   }
   @foreach (var entity in this.Scene.Entities)
   {
-    <EntityTreeNodeItem Entity="@entity" OnSelect="@this.OnSelect" Selected="@this.Selected" />
+    <EntityTreeNodeItemView Entity="@entity" OnSelect="@this.OnSelect" Selected="@this.Selected" />
   }
 </MudTreeViewItem>
 
 @code {
   [Parameter]
   [EditorRequired]
-  public required Scene Scene { get; set; } = default!;
+  public required ITrackedScene Scene { get; set; } = default!;
 
   [Parameter]
   [EditorRequired]
-  public required Stride.Core.ComponentBase? Selected { get; set; }
+  public object? Selected { get; set; }
 
   [Parameter]
   [EditorRequired]
-  public EventCallback<Stride.Core.ComponentBase> OnSelect { get; set; }
+  public EventCallback<object> OnSelect { get; set; }
 
   private Task HandleClick(MouseEventArgs args)
   {
