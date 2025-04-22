@@ -21,15 +21,14 @@
 }
 else
 {
-  <MudGrid>
+  <MudGrid Style="height: 100%;">
 
-    <MudItem xs="4">
+    <MudItem xs="4" Style="height: 100%;">
       <StrideEnchanted.Explorer.Components.Elements.SceneExplorerTree.ComponentView SceneInstance="@this.sceneSystem.SceneInstance"
-                                                                                    Selected="@this.Selected"
-                                                                                    OnSelect="@this.HandleSelect" />
+                                                                                    @bind-Selected="@this.Selected" />
     </MudItem>
 
-    <MudItem xs="8">
+    <MudItem xs="8" Style="height: 100%; overflow-y: auto;">
       @if (this.Selected is ITrackedScene selectedScene)
       {
         <SceneCardView Scene="@selectedScene" />
@@ -53,11 +52,5 @@ else
   {
     this.sceneSystem = this.Game.Services.GetSafeServiceAs<SceneSystem>();
     return base.OnInitializedAsync();
-  }
-
-  private Task HandleSelect(object? selected)
-  {
-    this.Selected = selected;
-    return Task.CompletedTask;
   }
 }

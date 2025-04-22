@@ -7,11 +7,11 @@
                  Text="@this.Entity.Name"
                  IconColor="@Color.Primary"
                  Icon="@Icons.Material.Filled.Label"
-                 Selected="@(this.Entity == this.Selected)"
+                 Selected="@(this.Selected == (object)this.Entity)"
                  OnClick="@this.HandleClick">
   @foreach (var childEntity in this.Entity.Children)
   {
-    <EntityTreeNodeItemView Entity="@childEntity" OnSelect="@this.OnSelect" Selected="@this.Selected" />
+    <EntityTreeNodeItemView Entity="@childEntity" Selected="@this.Selected" SelectedChanged="@this.SelectedChanged" />
   }
 </MudTreeViewItem>
 
@@ -25,11 +25,10 @@
   public object? Selected { get; set; }
 
   [Parameter]
-  [EditorRequired]
-  public EventCallback<object> OnSelect { get; set; }
+  public EventCallback<object?> SelectedChanged { get; set; }
 
   private Task HandleClick(MouseEventArgs args)
   {
-    return this.OnSelect.InvokeAsync(this.Entity);
+    return this.SelectedChanged.InvokeAsync(this.Entity);
   }
 }

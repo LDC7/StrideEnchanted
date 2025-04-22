@@ -7,7 +7,7 @@
 
 @inject DataTrackingTimer Timer;
 
-<MudCard Class="p-2" Elevation="1">
+<MudCard Class="p-2" Elevation="1" Style="height: 100%; overflow-y:auto;">
   <MudCardHeader>
     <MudText Typo="@Typo.h6">Scene Hierarchy</MudText>
   </MudCardHeader>
@@ -23,8 +23,8 @@
                    SelectionMode="@SelectionMode.SingleSelection"
                    SelectedValue="@this.Selected">
         <SceneTreeNodeItemView Scene="@this.trackedSceneInstance.RootScene"
-                               OnSelect="@this.OnSelect"
-                               Selected="@this.Selected" />
+                               Selected="@this.Selected"
+                               SelectedChanged="@this.SelectedChanged" />
       </MudTreeView>
     }
   </MudCardContent>
@@ -42,8 +42,7 @@
   public object? Selected { get; set; }
 
   [Parameter]
-  [EditorRequired]
-  public EventCallback<object> OnSelect { get; set; }
+  public EventCallback<object?> SelectedChanged { get; set; }
 
   protected override Task OnInitializedAsync()
   {

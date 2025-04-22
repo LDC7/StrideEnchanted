@@ -7,15 +7,15 @@
                  Text="@this.Scene.Name"
                  IconColor="@Color.Primary"
                  Icon="@Icons.Material.Filled.LabelImportant"
-                 Selected="@(this.Scene == this.Selected)"
+                 Selected="@(this.Selected == (object)this.Scene)"
                  OnClick="@this.HandleClick">
   @foreach (var childScene in this.Scene.Children)
   {
-    <SceneTreeNodeItemView Scene="@childScene" OnSelect="@this.OnSelect" Selected="@this.Selected" />
+    <SceneTreeNodeItemView Scene="@childScene" Selected="@this.Selected" SelectedChanged="@this.SelectedChanged" />
   }
   @foreach (var entity in this.Scene.Entities)
   {
-    <EntityTreeNodeItemView Entity="@entity" OnSelect="@this.OnSelect" Selected="@this.Selected" />
+    <EntityTreeNodeItemView Entity="@entity" Selected="@this.Selected" SelectedChanged="@this.SelectedChanged" />
   }
 </MudTreeViewItem>
 
@@ -29,11 +29,10 @@
   public object? Selected { get; set; }
 
   [Parameter]
-  [EditorRequired]
-  public EventCallback<object> OnSelect { get; set; }
+  public EventCallback<object?> SelectedChanged { get; set; }
 
   private Task HandleClick(MouseEventArgs args)
   {
-    return this.OnSelect.InvokeAsync(this.Scene);
+    return this.SelectedChanged.InvokeAsync(this.Scene);
   }
 }

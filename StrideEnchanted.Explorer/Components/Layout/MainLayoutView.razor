@@ -10,7 +10,7 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 <MudLayout>
-  <MudAppBar Elevation="1">
+  <MudAppBar Elevation="1" Fixed="@true">
     <MudText Typo="@Typo.h5" Class="ml-3">@this.Game.Window.Title</MudText>
     <MudSpacer />
     <NavMenuView />
@@ -18,7 +18,9 @@
     <MudIconButton Icon="@this.DarkLightModeButtonIcon" Color="@Color.Inherit" OnClick="@this.DarkModeToggle" />
   </MudAppBar>
   <MudMainContent Class="mt-16 pa-4">
-    @this.Body
+    <MudContainer MaxWidth="@MaxWidth.False" Class="pa-0" Style="height: calc(100vh - 64px - 16px);">
+      @this.Body
+    </MudContainer>
   </MudMainContent>
 </MudLayout>
 
