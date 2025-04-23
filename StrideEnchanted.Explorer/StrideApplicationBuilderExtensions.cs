@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MudBlazor.Services;
 using Stride.Games;
 using StrideEnchanted.Explorer.Components;
@@ -20,29 +23,23 @@ public static class StrideApplicationBuilderExtensions
     this IStrideApplicationBuilder builder,
     Action<StrideExplorerOptions>? configureOptions = null)
   {
-    builder.Services.Configure<StrideExplorerOptions>(builder.Configuration.GetSection("StrideExplorer"));
+    builder.Services.Configure<StrideExplorerOptions>(builder.Configuration.GetSection(StrideExplorerOptions.OptionsName));
     if (configureOptions != null)
       builder.Services.PostConfigure(configureOptions);
 
-    builder.Services.AddHostedService(static provider =>
+    builder.Services.AddHostedService(provider =>
     {
       var webHostBuilder = new WebHostBuilder();
 
       var environment = provider.GetRequiredService<IHostEnvironment>();
-#warning TODO: Разобраться, почему не приходят настройки из файла.
-      var configurationManager = provider.GetRequiredService<IConfigurationManager>();
+      var configuration = provider.GetRequiredService<IConfiguration>();
       var loggerProviders = provider.GetServices<ILoggerProvider>();
 
       webHostBuilder
         .UseContentRoot(environment.ContentRootPath)
         .ConfigureAppConfiguration(configBuilder =>
         {
-          configBuilder.Sources.Clear();
-          foreach (var source in configurationManager.Sources)
-            configBuilder.Sources.Add(source);
-
-          foreach (var property in configurationManager.Properties)
-            configBuilder.Properties[property.Key] = property.Value;
+          configBuilder.AddConfiguration(configuration);
         });
 
       webHostBuilder.ConfigureLogging(loggingBuilder =>
@@ -57,6 +54,10 @@ public static class StrideApplicationBuilderExtensions
 
       webHostBuilder.ConfigureServices(services =>
       {
+        services.Configure<StrideExplorerOptions>(configuration.GetSection(StrideExplorerOptions.OptionsName));
+        if (configureOptions != null)
+          services.PostConfigure(configureOptions);
+
         var game = provider.GetRequiredService<IGame>();
         services
           .AddSingleton(game)
@@ -72,15 +73,21 @@ public static class StrideApplicationBuilderExtensions
           .AddInteractiveServerComponents();
       });
 
-      webHostBuilder.UseKestrel(static options =>
+      webHostBuilder.UseKestrel(static kestrelOptions =>
       {
-#warning TODO: Это должно быть как-то иначе.
-        options.ListenLocalhost(51891);
+        var options = kestrelOptions.ApplicationServices
+          .GetRequiredService<IOptions<StrideExplorerOptions>>().Value;
+
+        Action<ListenOptions> listenOptions = static _ => { };
+        if (options.UseHttps)
+          listenOptions = static opt => opt.UseHttps();
+
+        kestrelOptions.Listen(IPAddress.Parse(options.IPAddress), options.Port, listenOptions);
       });
 
       webHostBuilder.Configure(static app =>
       {
-        app.UseExceptionHandler("/ErrorView");
+        app.UseExceptionHandler("/Error");
         app.UseStaticFiles();
         app.UseRouting();
         app.UseAntiforgery();

@@ -14,18 +14,20 @@
   [EditorRequired]
   public required ITrackedEntityComponentParameter Parameter { get; set; } = default!;
 
-  protected override void OnInitialized()
+  protected override Task OnInitializedAsync()
   {
-    this.Parameter.PropertyChanged += this.OnParamChanged;
+#warning TODO: It should not be ReadOnly.
+    this.Parameter.PropertyChanged += this.OnPropertyChanged;
+    return base.OnInitializedAsync();
   }
 
-  private void OnParamChanged(object? sender, PropertyChangedEventArgs _)
+  private void OnPropertyChanged(object? sender, PropertyChangedEventArgs _)
   {
     InvokeAsync(this.StateHasChanged);
   }
 
   public void Dispose()
   {
-    this.Parameter.PropertyChanged -= this.OnParamChanged;
+    this.Parameter.PropertyChanged -= this.OnPropertyChanged;
   }
 }

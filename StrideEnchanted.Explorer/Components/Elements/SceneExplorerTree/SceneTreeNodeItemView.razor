@@ -8,6 +8,8 @@
                  IconColor="@Color.Primary"
                  Icon="@Icons.Material.Filled.LabelImportant"
                  Selected="@(this.Selected == (object)this.Scene)"
+                 CanExpand="@this.CanExpand"
+                 ExpandButtonIcon="@(this.CanExpand ? Icons.Material.Filled.ArrowRight : null)"
                  OnClick="@this.HandleClick">
   @foreach (var childScene in this.Scene.Children)
   {
@@ -27,6 +29,8 @@
   [Parameter]
   [EditorRequired]
   public object? Selected { get; set; }
+
+  private bool CanExpand => this.Scene.Entities.Any() || this.Scene.Children.Any();
 
   [Parameter]
   public EventCallback<object?> SelectedChanged { get; set; }

@@ -1,6 +1,9 @@
 ﻿@using Microsoft.AspNetCore.Components.Web
 @using MudBlazor
 @using StrideEnchanted.Explorer.Interfaces
+@using System.ComponentModel
+
+@implements IDisposable
 
 <MudTreeViewItem id="@this.Entity.Id"
                  Value="@this.Entity"
@@ -8,6 +11,8 @@
                  IconColor="@Color.Primary"
                  Icon="@Icons.Material.Filled.Label"
                  Selected="@(this.Selected == (object)this.Entity)"
+                 CanExpand="@this.CanExpand"
+                 ExpandButtonIcon="@(this.CanExpand ? Icons.Material.Filled.ArrowRight : null)"
                  OnClick="@this.HandleClick">
   @foreach (var childEntity in this.Entity.Children)
   {
@@ -27,8 +32,26 @@
   [Parameter]
   public EventCallback<object?> SelectedChanged { get; set; }
 
+  private bool CanExpand => this.Entity.Children.Any();
+
+  protected override Task OnInitializedAsync()
+  {
+    this.Entity.PropertyChanged += this.OnPropertyChanged;
+    return base.OnInitializedAsync();
+  }
+
   private Task HandleClick(MouseEventArgs args)
   {
     return this.SelectedChanged.InvokeAsync(this.Entity);
+  }
+
+  private void OnPropertyChanged(object? sender, PropertyChangedEventArgs _)
+  {
+    InvokeAsync(this.StateHasChanged);
+  }
+
+  public void Dispose()
+  {
+    this.Entity.PropertyChanged -= this.OnPropertyChanged;
   }
 }

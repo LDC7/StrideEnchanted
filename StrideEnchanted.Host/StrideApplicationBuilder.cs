@@ -5,7 +5,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Stride.Audio;
+using Stride.Core.IO;
+using Stride.Engine;
+using Stride.Engine.Processors;
 using Stride.Games;
+using Stride.Graphics;
+using Stride.Graphics.Font;
+using Stride.Profiling;
+using Stride.Rendering.Sprites;
+using Stride.VirtualReality;
+using StrideEnchanted.Host.Extensions;
 using StrideEnchanted.Host.Logging;
 
 namespace StrideEnchanted.Host;
@@ -43,13 +53,31 @@ internal sealed class StrideApplicationBuilder<TGame> : IStrideApplicationBuilde
       .ClearProviders()
       .AddProvider(new StrideLoggerProvider());
 
-#warning TODO: нужно перенести сервисы из Game.Services.
-    var serviceCollection = this.hostApplicationBuilder.Services
+    _ = this.hostApplicationBuilder.Services
       .AddSingleton(this.hostApplicationBuilder.Services)
-      .AddSingleton<IConfigurationManager>(this.hostApplicationBuilder.Configuration)
       .AddSingleton<TGame>()
       .AddSingleton<IGame>(static p => p.GetRequiredService<TGame>())
       .AddSingleton<GameBase>(static p => p.GetRequiredService<TGame>());
+
+    this.hostApplicationBuilder.Services
+      // Game
+      .AddGameService<ScriptSystem>()
+      .AddGameService<SceneSystem>()
+      .AddGameService<AudioSystem>()
+      .AddGameService<IAudioEngineProvider>()
+      .AddGameService<FontSystem>()
+      .AddGameService<IFontFactory>()
+      .AddGameService<SpriteAnimationSystem>()
+      .AddGameService<DebugTextSystem>()
+      .AddGameService<GameProfilingSystem>()
+      .AddGameService<VRDeviceSystem>()
+      .AddGameService<IGraphicsDeviceManager>()
+      .AddGameService<IGraphicsDeviceService>()
+      // GameBase
+      .AddGameService<IDatabaseFileProviderService>()
+      .AddGameService<IGameSystemCollection>()
+      .AddGameService<IGraphicsDeviceFactory>()
+      .AddGameService<IGamePlatform>();
   }
 
   #endregion
@@ -82,6 +110,11 @@ internal sealed class StrideApplicationBuilder<TGame> : IStrideApplicationBuilde
 
     var host = this.hostApplicationBuilder.Build();
     var game = host.Services.GetRequiredService<GameBase>();
+
+    game.Services.AddService(host.Services);
+
+#warning TODO: It would be great if each scene had its own IServiceScope.
+
     return new StrideApplication(host, game);
   }
 
