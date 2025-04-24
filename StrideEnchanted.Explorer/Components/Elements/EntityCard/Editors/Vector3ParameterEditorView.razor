@@ -1,0 +1,52 @@
+﻿@using MudBlazor
+@using Stride.Core.Mathematics
+@using StrideEnchanted.Explorer.Interfaces
+@using System.ComponentModel
+
+@implements IDisposable
+
+<MudStack Row="@true">
+
+  <MudNumericField T="@float"
+                   Label="@($"{this.Parameter.Name}.X")"
+                   Value="@this.internalValue.X"
+                   ReadOnly="@true"
+                   Class="my-1" />
+
+  <MudNumericField Label="@($"{this.Parameter.Name}.Y")"
+                   Value="@this.internalValue.Y"
+                   ReadOnly="@true"
+                   Class="my-1" />
+
+  <MudNumericField Label="@($"{this.Parameter.Name}.Z")"
+                   Value="@this.internalValue.Z"
+                   ReadOnly="@true"
+                   Class="my-1" />
+
+</MudStack>
+
+@code {
+  private Vector3 internalValue = default;
+
+  [Parameter]
+  [EditorRequired]
+  public required ITrackedEntityComponentParameter Parameter { get; set; } = default!;
+
+  protected override Task OnInitializedAsync()
+  {
+    this.internalValue = (Vector3)this.Parameter.Value!;
+    this.Parameter.PropertyChanged += this.OnPropertyChanged;
+    return base.OnInitializedAsync();
+  }
+
+  private void OnPropertyChanged(object? sender, PropertyChangedEventArgs _)
+  {
+    this.internalValue = (Vector3)this.Parameter.Value!;
+    InvokeAsync(this.StateHasChanged);
+  }
+
+  public void Dispose()
+  {
+    this.Parameter.PropertyChanged -= this.OnPropertyChanged;
+  }
+}

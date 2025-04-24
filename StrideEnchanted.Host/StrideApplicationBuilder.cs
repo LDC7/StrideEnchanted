@@ -113,8 +113,6 @@ internal sealed class StrideApplicationBuilder<TGame> : IStrideApplicationBuilde
 
     game.Services.AddService(host.Services);
 
-#warning TODO: It would be great if each scene had its own IServiceScope.
-
     return new StrideApplication(host, game);
   }
 

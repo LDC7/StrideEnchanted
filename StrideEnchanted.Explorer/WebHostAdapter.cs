@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -13,16 +14,17 @@ internal sealed class WebHostAdapter : IHostedService, IDisposable
   #region Fields and Properties
 
   private readonly IWebHost webHost;
-  private readonly ILogger<IWebHost> logger;
+  private readonly ILogger<IHostedService> logger;
 
   #endregion
 
   #region Constructor
 
-  public WebHostAdapter(IWebHost webHost, ILogger<IWebHost> logger)
+  public WebHostAdapter(IWebHost webHost)
   {
     this.webHost = webHost;
-    this.logger = logger;
+
+    this.logger = this.webHost.Services.GetRequiredService<ILogger<IHostedService>>();
   }
 
   #endregion

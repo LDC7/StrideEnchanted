@@ -103,11 +103,11 @@ public static class StrideApplicationBuilderExtensions
       webHostBuilder.UseStaticWebAssets();
 
       var webHost = webHostBuilder.Build();
-      var logger = webHost.Services.GetRequiredService<ILogger<IWebHost>>();
+      var logger = webHost.Services.GetRequiredService<ILogger<IStrideApplicationBuilder>>();
       if (environment.IsProduction())
         logger.LogWarning("Stride Explorer should not be used in production!");
 
-      return new WebHostAdapter(webHost, logger);
+      return new WebHostAdapter(webHost);
     });
 
     return builder;

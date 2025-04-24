@@ -1,33 +1,90 @@
 ﻿@using MudBlazor
+@using Stride.Core.Mathematics
+@using StrideEnchanted.Explorer.Components.Elements.EntityCard.Editors
 @using StrideEnchanted.Explorer.Interfaces
 @using System.ComponentModel
 
-@implements IDisposable
-
-<MudTextField Label="@this.Parameter.Name"
-              Value="@this.Parameter.Value"
-              ReadOnly="@true"
-              Class="my-1" />
+@switch (this.Type)
+{
+  case ParameterType.String:
+    {
+      <TextParameterEditorView Parameter="@this.Parameter" />
+      break;
+    }
+  case ParameterType.Integer:
+    {
+      <NumberParameterEditorView T="@(int?)" Parameter="@this.Parameter" />
+      break;
+    }
+  case ParameterType.Float:
+    {
+      <NumberParameterEditorView T="@(float?)" Parameter="@this.Parameter" />
+      break;
+    }
+  case ParameterType.Double:
+    {
+      <NumberParameterEditorView T="@(double?)" Parameter="@this.Parameter" />
+      break;
+    }
+  case ParameterType.Decimal:
+    {
+      <NumberParameterEditorView T="@(decimal?)" Parameter="@this.Parameter" />
+      break;
+    }
+  case ParameterType.Vector3:
+    {
+      <Vector3ParameterEditorView Parameter="@this.Parameter" />
+      break;
+    }
+  case ParameterType.Unknown:
+  default:
+    {
+      <UnknownParameterEditorView Parameter="@this.Parameter" />
+      break;
+    }
+}
 
 @code {
+  private ParameterType Type { get; set; }
+
   [Parameter]
   [EditorRequired]
   public required ITrackedEntityComponentParameter Parameter { get; set; } = default!;
 
   protected override Task OnInitializedAsync()
   {
-#warning TODO: It should not be ReadOnly.
-    this.Parameter.PropertyChanged += this.OnPropertyChanged;
+    this.Type = GetParameterType(this.Parameter);
     return base.OnInitializedAsync();
   }
 
-  private void OnPropertyChanged(object? sender, PropertyChangedEventArgs _)
+  private static ParameterType GetParameterType(ITrackedEntityComponentParameter parameter)
   {
-    InvokeAsync(this.StateHasChanged);
+    return parameter.ParameterType switch
+    {
+      Type t when t == typeof(bool) => ParameterType.Boolean,
+      Type t when t == typeof(int) => ParameterType.Integer,
+      Type t when t == typeof(float) => ParameterType.Float,
+      Type t when t == typeof(Vector2) => ParameterType.Vector2,
+      Type t when t == typeof(Vector3) => ParameterType.Vector3,
+      Type t when t == typeof(Vector4) => ParameterType.Vector4,
+      Type t when t == typeof(double) => ParameterType.Double,
+      Type t when t == typeof(decimal) => ParameterType.Decimal,
+      Type t when t == typeof(string) => ParameterType.String,
+      _ => ParameterType.Unknown
+    };
   }
 
-  public void Dispose()
+  private enum ParameterType
   {
-    this.Parameter.PropertyChanged -= this.OnPropertyChanged;
+    Unknown,
+    Boolean,
+    Integer,
+    Float,
+    Double,
+    Decimal,
+    String,
+    Vector2,
+    Vector3,
+    Vector4
   }
 }

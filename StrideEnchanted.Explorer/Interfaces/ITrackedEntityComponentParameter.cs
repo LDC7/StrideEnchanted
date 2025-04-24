@@ -9,5 +9,7 @@ public interface ITrackedEntityComponentParameter : INotifyPropertyChanged, IDis
 
   object? Value { get; }
 
-  void SetValue(object value);
+  Type ParameterType { get; }
+
+  void SetValue(object? value);
 }

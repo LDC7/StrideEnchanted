@@ -1,0 +1,79 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@using MudBlazor
+@using StrideEnchanted.Explorer.Interfaces
+@using System.ComponentModel
+
+@typeparam T
+@implements IDisposable
+
+<MudNumericField T="@T"
+                 @ref="@this.editorRef"
+                 Label="@this.Parameter.Name"
+                 Value="@this.internalValue"
+                 Class="my-1"
+                 ValueChanged="@this.HandleValueChanged"
+                 OnKeyDown="@this.HandleKeyDown"
+                 OnBlur="@this.HandleBlur" />
+
+@code {
+  private MudNumericField<T> editorRef = default!;
+  private T? internalValue = default!;
+  private bool isEditing = false;
+
+  [Parameter]
+  [EditorRequired]
+  public required ITrackedEntityComponentParameter Parameter { get; set; } = default!;
+
+  protected override Task OnInitializedAsync()
+  {
+    this.internalValue = this.Parameter.Value is null ? default : (T)this.Parameter.Value;
+    this.Parameter.PropertyChanged += this.OnPropertyChanged;
+    return base.OnInitializedAsync();
+  }
+
+  private void HandleValueChanged(T newValue)
+  {
+    if (!object.Equals(this.internalValue, newValue))
+    {
+      this.isEditing = true;
+      this.internalValue = newValue;
+    }
+  }
+
+  private async Task HandleKeyDown(KeyboardEventArgs args)
+  {
+    if (args.Key == "Enter")
+      await this.BlurAsync();
+  }
+
+  private Task HandleBlur(FocusEventArgs args)
+  {
+    this.ApplyInternalValue();
+    return Task.CompletedTask;
+  }
+
+  private void ApplyInternalValue()
+  {
+    this.isEditing = false;
+    this.Parameter.SetValue(this.internalValue);
+  }
+
+  private async Task BlurAsync()
+  {
+    await this.editorRef.BlurAsync();
+  }
+
+  private void OnPropertyChanged(object? sender, PropertyChangedEventArgs _)
+  {
+    if (!this.isEditing)
+    {
+      this.internalValue = this.Parameter.Value is null ? default : (T)this.Parameter.Value;
+      InvokeAsync(this.StateHasChanged);
+    }
+  }
+
+  public void Dispose()
+  {
+    this.Parameter.PropertyChanged -= this.OnPropertyChanged;
+  }
+}
