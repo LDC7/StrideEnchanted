@@ -29,16 +29,6 @@
                    OnKeyDown="@this.HandleKeyDown"
                    OnBlur="@this.HandleBlur" />
 
-  <MudNumericField T="@float"
-                   @ref="@this.editorZRef"
-                   Label="@($"{this.Parameter.Name}.Z")"
-                   Value="@this.Z"
-                   Class="my-1"
-                   HideSpinButtons="@true"
-                   ValueChanged="@this.HandleValueZChanged"
-                   OnKeyDown="@this.HandleKeyDown"
-                   OnBlur="@this.HandleBlur" />
-
   <MudToggleIconButton @bind-Toggled="@this.IsNormalized"
                        Icon="@ExplorerIcons.NormalizedVector"
                        Color="@MudBlazor.Color.Default"
@@ -49,10 +39,8 @@
 @code {
   private MudNumericField<float> editorXRef = default!;
   private MudNumericField<float> editorYRef = default!;
-  private MudNumericField<float> editorZRef = default!;
   private float X = default;
   private float Y = default;
-  private float Z = default;
   private bool isEditing = false;
 
   public bool IsNormalized { get; set; }
@@ -63,11 +51,10 @@
 
   protected override Task OnInitializedAsync()
   {
-    var vector = (Vector3)this.Parameter.Value!;
+    var vector = (Vector2)this.Parameter.Value!;
     this.IsNormalized = vector.IsNormalized;
     this.X = vector.X;
     this.Y = vector.Y;
-    this.Z = vector.Z;
     this.Parameter.PropertyChanged += this.OnPropertyChanged;
     return base.OnInitializedAsync();
   }
@@ -90,15 +77,6 @@
     }
   }
 
-  private void HandleValueZChanged(float newValue)
-  {
-    if (this.Z != newValue)
-    {
-      this.isEditing = true;
-      this.Z = newValue;
-    }
-  }
-
   private async Task HandleKeyDown(KeyboardEventArgs args)
   {
     if (args.Key == "Enter")
@@ -113,10 +91,7 @@
 
   private void ApplyInternalValue()
   {
-    var vector = new Vector3(this.X, this.Y, this.Z);
-    if (this.IsNormalized)
-      vector.Normalize();
-
+    var vector = new Vector2(this.X, this.Y);
     this.isEditing = false;
     this.Parameter.SetValue(vector);
   }
@@ -125,17 +100,18 @@
   {
     await this.editorXRef.BlurAsync();
     await this.editorYRef.BlurAsync();
-    await this.editorZRef.BlurAsync();
   }
 
   private void OnPropertyChanged(object? sender, PropertyChangedEventArgs _)
   {
     if (!this.isEditing)
     {
-      var vector = (Vector3)this.Parameter.Value!;
+      var vector = (Vector2)this.Parameter.Value!;
+      if (this.IsNormalized)
+        vector.Normalize();
+
       this.X = vector.X;
       this.Y = vector.Y;
-      this.Z = vector.Z;
       InvokeAsync(this.StateHasChanged);
     }
   }

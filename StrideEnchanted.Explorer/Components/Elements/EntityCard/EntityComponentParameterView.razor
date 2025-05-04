@@ -6,6 +6,11 @@
 
 @switch (this.Type)
 {
+  case ParameterType.Boolean:
+    {
+      <BooleanParameterEditorView Parameter="@this.Parameter" />
+      break;
+    }
   case ParameterType.String:
     {
       <TextParameterEditorView Parameter="@this.Parameter" />
@@ -31,9 +36,24 @@
       <NumberParameterEditorView T="@(decimal?)" Parameter="@this.Parameter" />
       break;
     }
+  case ParameterType.Vector2:
+    {
+      <Vector2ParameterEditorView Parameter="@this.Parameter" />
+      break;
+    }
   case ParameterType.Vector3:
     {
       <Vector3ParameterEditorView Parameter="@this.Parameter" />
+      break;
+    }
+  case ParameterType.Vector4:
+    {
+      <Vector4ParameterEditorView T="@Vector4" Parameter="@this.Parameter" />
+      break;
+    }
+  case ParameterType.Quaternion:
+    {
+      <Vector4ParameterEditorView T="@Quaternion" Parameter="@this.Parameter" />
       break;
     }
   case ParameterType.Unknown:
@@ -67,6 +87,7 @@
       Type t when t == typeof(Vector2) => ParameterType.Vector2,
       Type t when t == typeof(Vector3) => ParameterType.Vector3,
       Type t when t == typeof(Vector4) => ParameterType.Vector4,
+      Type t when t == typeof(Quaternion) => ParameterType.Quaternion,
       Type t when t == typeof(double) => ParameterType.Double,
       Type t when t == typeof(decimal) => ParameterType.Decimal,
       Type t when t == typeof(string) => ParameterType.String,
@@ -85,6 +106,7 @@
     String,
     Vector2,
     Vector3,
-    Vector4
+    Vector4,
+    Quaternion
   }
 }

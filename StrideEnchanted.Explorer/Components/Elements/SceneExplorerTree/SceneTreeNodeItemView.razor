@@ -10,6 +10,7 @@
                  Selected="@(this.Selected == (object)this.Scene)"
                  CanExpand="@this.CanExpand"
                  ExpandButtonIcon="@(this.CanExpand ? Icons.Material.Filled.ArrowRight : null)"
+                 Expanded="@true"
                  OnClick="@this.HandleClick">
   @foreach (var childScene in this.Scene.Children)
   {

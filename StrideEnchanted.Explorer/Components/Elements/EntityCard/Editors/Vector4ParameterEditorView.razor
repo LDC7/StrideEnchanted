@@ -4,7 +4,9 @@
 @using StrideEnchanted.Explorer.Constants
 @using StrideEnchanted.Explorer.Interfaces
 @using System.ComponentModel
+@using System.Runtime.InteropServices
 
+@typeparam T
 @implements IDisposable
 
 <MudStack Row="@true">
@@ -39,6 +41,16 @@
                    OnKeyDown="@this.HandleKeyDown"
                    OnBlur="@this.HandleBlur" />
 
+  <MudNumericField T="@float"
+                   @ref="@this.editorWRef"
+                   Label="@($"{this.Parameter.Name}.W")"
+                   Value="@this.W"
+                   Class="my-1"
+                   HideSpinButtons="@true"
+                   ValueChanged="@this.HandleValueWChanged"
+                   OnKeyDown="@this.HandleKeyDown"
+                   OnBlur="@this.HandleBlur" />
+
   <MudToggleIconButton @bind-Toggled="@this.IsNormalized"
                        Icon="@ExplorerIcons.NormalizedVector"
                        Color="@MudBlazor.Color.Default"
@@ -50,9 +62,11 @@
   private MudNumericField<float> editorXRef = default!;
   private MudNumericField<float> editorYRef = default!;
   private MudNumericField<float> editorZRef = default!;
+  private MudNumericField<float> editorWRef = default!;
   private float X = default;
   private float Y = default;
   private float Z = default;
+  private float W = default;
   private bool isEditing = false;
 
   public bool IsNormalized { get; set; }
@@ -63,11 +77,23 @@
 
   protected override Task OnInitializedAsync()
   {
-    var vector = (Vector3)this.Parameter.Value!;
-    this.IsNormalized = vector.IsNormalized;
-    this.X = vector.X;
-    this.Y = vector.Y;
-    this.Z = vector.Z;
+    if (this.Parameter.Value is Vector4 vector)
+    {
+      this.IsNormalized = vector.IsNormalized;
+      this.X = vector.X;
+      this.Y = vector.Y;
+      this.Z = vector.Z;
+      this.W = vector.W;
+    }
+    else if (this.Parameter.Value is Quaternion quaternion)
+    {
+      this.IsNormalized = quaternion.IsNormalized;
+      this.X = quaternion.X;
+      this.Y = quaternion.Y;
+      this.Z = quaternion.Z;
+      this.W = quaternion.W;
+    }
+
     this.Parameter.PropertyChanged += this.OnPropertyChanged;
     return base.OnInitializedAsync();
   }
@@ -99,6 +125,15 @@
     }
   }
 
+  private void HandleValueWChanged(float newValue)
+  {
+    if (this.W != newValue)
+    {
+      this.isEditing = true;
+      this.W = newValue;
+    }
+  }
+
   private async Task HandleKeyDown(KeyboardEventArgs args)
   {
     if (args.Key == "Enter")
@@ -113,12 +148,29 @@
 
   private void ApplyInternalValue()
   {
-    var vector = new Vector3(this.X, this.Y, this.Z);
-    if (this.IsNormalized)
-      vector.Normalize();
+    object? value = null;
+    if (typeof(T) == typeof(Vector4))
+    {
+      var vector = new Vector4(this.X, this.Y, this.Z, this.W);
+      if (this.IsNormalized)
+        vector.Normalize();
 
-    this.isEditing = false;
-    this.Parameter.SetValue(vector);
+      value = vector;
+    }
+    if (typeof(T) == typeof(Quaternion))
+    {
+      var quaternion = new Quaternion(this.X, this.Y, this.Z, this.W);
+      if (this.IsNormalized)
+        quaternion.Normalize();
+
+      value = quaternion;
+    }
+
+    if (value != null)
+    {
+      this.isEditing = false;
+      this.Parameter.SetValue(value);
+    }
   }
 
   private async Task BlurAsync()
@@ -126,16 +178,28 @@
     await this.editorXRef.BlurAsync();
     await this.editorYRef.BlurAsync();
     await this.editorZRef.BlurAsync();
+    await this.editorWRef.BlurAsync();
   }
 
   private void OnPropertyChanged(object? sender, PropertyChangedEventArgs _)
   {
     if (!this.isEditing)
     {
-      var vector = (Vector3)this.Parameter.Value!;
-      this.X = vector.X;
-      this.Y = vector.Y;
-      this.Z = vector.Z;
+      if (this.Parameter.Value is Vector4 vector)
+      {
+        this.X = vector.X;
+        this.Y = vector.Y;
+        this.Z = vector.Z;
+        this.W = vector.W;
+      }
+      else if (this.Parameter.Value is Quaternion quaternion)
+      {
+        this.X = quaternion.X;
+        this.Y = quaternion.Y;
+        this.Z = quaternion.Z;
+        this.W = quaternion.W;
+      }
+
       InvokeAsync(this.StateHasChanged);
     }
   }

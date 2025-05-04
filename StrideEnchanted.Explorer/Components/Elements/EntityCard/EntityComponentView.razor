@@ -3,7 +3,7 @@
 @using StrideEnchanted.Explorer.Interfaces
 
 <MudExpansionPanel Text="@this.Component.Name" Expanded="@true">
-  @foreach (var parameter in this.Component.Parameters)
+  @foreach (var parameter in this.Component.Parameters.OrderBy(p => p.Name))
   {
     <EntityComponentParameterView Parameter="@parameter" />
   }

@@ -40,7 +40,6 @@ internal sealed class TrackedEntityComponent : ITrackedEntityComponent
     this.parameters = fields.Concat(properties)
       .Where(p => p.MemberInfo.GetCustomAttribute<DataMemberIgnoreAttribute>() == null)
       .Where(p => p.MemberInfo.GetCustomAttribute<DisplayAttribute>()?.Browsable != false)
-      .OrderBy(p => p.Name)
       .ToImmutableDictionary(p => p.Name, p => p);
   }
 

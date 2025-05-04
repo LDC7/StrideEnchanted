@@ -1,0 +1,47 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@using MudBlazor
+@using StrideEnchanted.Explorer.Interfaces
+@using System.ComponentModel
+
+@implements IDisposable
+
+<MudSwitch T="bool"
+           @ref="@this.editorRef"
+           Label="@this.Parameter.Name"
+           Value="@this.internalValue"
+           Class="my-1"
+           Color="@Color.Primary"
+           ValueChanged="@this.HandleValueChanged" />
+
+@code {
+  private MudSwitch<bool> editorRef = default!;
+  private bool internalValue = default;
+
+  [Parameter]
+  [EditorRequired]
+  public required ITrackedEntityComponentParameter Parameter { get; set; } = default!;
+
+  protected override Task OnInitializedAsync()
+  {
+    this.internalValue = (bool)this.Parameter.Value!;
+    this.Parameter.PropertyChanged += this.OnPropertyChanged;
+    return base.OnInitializedAsync();
+  }
+
+  private void HandleValueChanged(bool newValue)
+  {
+    this.internalValue = newValue;
+    this.Parameter.SetValue(this.internalValue);
+  }
+
+  private void OnPropertyChanged(object? sender, PropertyChangedEventArgs _)
+  {
+    this.internalValue = (bool)this.Parameter.Value!;
+    InvokeAsync(this.StateHasChanged);
+  }
+
+  public void Dispose()
+  {
+    this.Parameter.PropertyChanged -= this.OnPropertyChanged;
+  }
+}
