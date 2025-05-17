@@ -1,0 +1,62 @@
+!SceneAsset
+Id: 2479b944-494c-4409-9e8f-ce9367398fdc
+SerializedVersion: {Stride: 3.1.0.1}
+Tags: []
+ChildrenIds: []
+Offset: {X: 0.0, Y: 0.0, Z: 0.0}
+Hierarchy:
+    RootParts:
+        - ref!! 2bb13384-bcfb-42d7-856a-253b5a132ea8
+    Parts:
+        -   Entity:
+                Id: 01b86732-4a0c-43c8-b914-1997c7616d2e
+                Name: Sphere
+                Components:
+                    ccf5bbd1b4bb2423bc8db2476eb59ab2: !TransformComponent
+                        Id: d69484c3-a8e6-42da-9857-0755e11b5343
+                        Position: {X: 0.0, Y: 0.5, Z: 0.0}
+                        Rotation: {X: 0.0, Y: 0.0, Z: 0.0, W: 1.0}
+                        Scale: {X: 1.0, Y: 1.0, Z: 1.0}
+                        Children: {}
+                    f063c14eaa4c9ea8c871c1168272d9f4: !ModelComponent
+                        Id: 49eab4c8-6fba-4fb9-878f-45ab8523e85f
+                        Model: 44e23982-216e-4fe1-a9d8-dd564a2b5f41:Sphere
+                        Materials: {}
+                    9e55cbf43421f12ce3756f401fdac7d8: !StrideEnchanted.Example.TestPropertyChangingScript,StrideEnchanted.Example
+                        Id: eb6e3bb5-ae0d-4ebd-be71-7d86aca14413
+                        RandomFieldValue: 0
+                        RandomPropertyValue: 0
+            Base:
+                BasePartAsset: b4119211-f9df-477f-9568-dac277b0ae89:GroundWithSpherePrefab
+                BasePartId: b336a6a8-da27-4469-8f74-79fc6c3885c1
+                InstanceId: 3f154352-2a28-413d-91aa-98293a8a47b2
+        -   Entity:
+                Id: 2bb13384-bcfb-42d7-856a-253b5a132ea8
+                Name: GroundWithSpherePrefab
+                Components:
+                    22c66d951be30539a0cd21a2c73d28ed: !TransformComponent
+                        Id: 4d953461-7305-4373-ac5e-4916b70350e8
+                        Position: {X: 12.0, Y: 0.0, Z: 12.0}
+                        Rotation: {X: 0.0, Y: 0.0, Z: 0.0, W: 1.0}
+                        Scale: {X: 1.0, Y: 1.0, Z: 1.0}
+                        Children:
+                            eb862e5986e5e4e60f1bf639352a1e25: ref!! d69484c3-a8e6-42da-9857-0755e11b5343
+                            8762918fe1b348c5a8ec394dbf8752e6: ref!! b9c473e3-039a-4c01-b0f7-78cf03ef6ca1
+        -   Entity:
+                Id: 411270b9-7452-4594-a0d1-3f50dfcbadb5
+                Name: Ground
+                Components:
+                    b4dbc5e2cfa516e900047fcf19c3df82: !TransformComponent
+                        Id: b9c473e3-039a-4c01-b0f7-78cf03ef6ca1
+                        Position: {X: 0.0, Y: 0.0, Z: 0.0}
+                        Rotation: {X: 0.0, Y: 0.0, Z: 0.0, W: 1.0}
+                        Scale: {X: 1.0, Y: 1.0, Z: 1.0}
+                        Children: {}
+                    fc2c7183637d0c3e41cd5dd4beede141: !ModelComponent
+                        Id: 627b8f66-cbda-42e1-bcc6-27b829f57bfc
+                        Model: 4962f52b-072c-45b1-9f07-26f4b36ab08e:Ground
+                        Materials: {}
+            Base:
+                BasePartAsset: b4119211-f9df-477f-9568-dac277b0ae89:GroundWithSpherePrefab
+                BasePartId: bc0b654d-5a81-4744-8e33-2887e80f0d34
+                InstanceId: 3f154352-2a28-413d-91aa-98293a8a47b2

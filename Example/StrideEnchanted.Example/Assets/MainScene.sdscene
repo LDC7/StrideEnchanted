@@ -12,6 +12,7 @@ Hierarchy:
         - ref!! 7e70ce27-a0e8-41e5-98b1-3863afe32d07
         - ref!! b8c9d471-885c-4aad-8bb4-3a4f2aa827de
         - ref!! 783a8a5c-ff64-4caa-a974-549d92dae18b
+        - ref!! 61c91c1f-3fea-4ac2-b265-ac7887d993e7
     Parts:
         -   Entity:
                 Id: 264c34db-717e-4ead-805e-13d4cfc1801e
@@ -63,6 +64,46 @@ Hierarchy:
                                 BiasParameters: {}
                         Intensity: 20.0
         -   Entity:
+                Id: 494ae9ed-0a80-4b4b-9dc8-5cac229eaf84
+                Name: FloatEntity
+                Components:
+                    d991d84e99d236f083b5b88ff90568c3: !TransformComponent
+                        Id: 973d3192-e6ee-4101-b2b8-0e6324b2d90c
+                        Position: {X: 2.0, Y: 0.0, Z: 0.0}
+                        Rotation: {X: 0.0, Y: 0.0, Z: 0.0, W: 1.0}
+                        Scale: {X: 1.0, Y: 1.0, Z: 1.0}
+                        Children: {}
+                    d682f8ff776577c64abe4f02a2011ac0: !StrideEnchanted.Example.FloatParametersScript,StrideEnchanted.Example
+                        Id: 1e4a5199-ebe3-4559-84bb-673655eebe4e
+                        FloatFieldValue: 0.0
+                        FloatNullableFieldValue: null
+                        DoubleFieldValue: 0.0
+                        DoubleNullableFieldValue: null
+                        DecimalFieldValue: 0.0
+                        DecimalNullableFieldValue: null
+                        FloatPropertyValue: 0.0
+                        FloatNullablePropertyValue: null
+                        DoublePropertyValue: 0.0
+                        DoubleNullablePropertyValue: null
+                        DecimalPropertyValue: 0.0
+                        DecimalNullablePropertyValue: null
+        -   Entity:
+                Id: 61c91c1f-3fea-4ac2-b265-ac7887d993e7
+                Name: ParametersGroup
+                Components:
+                    39ea9614273c5f9f537ad16e41ee6671: !TransformComponent
+                        Id: aa2ce85c-9bee-4b1a-b845-a604e3ba312b
+                        Position: {X: 0.0, Y: 1.0, Z: 4.0}
+                        Rotation: {X: 0.0, Y: 0.0, Z: 0.0, W: 1.0}
+                        Scale: {X: 0.5, Y: 0.5, Z: 0.5}
+                        Children:
+                            c609c2263f756eecd6309b4f3cbbc32a: ref!! 69e4adf4-1798-4dd3-8f55-2ec13dfe840e
+                            dbb2703a43ec394ca823907554010a0d: ref!! a17abfc2-cd53-4987-8c15-e44694401044
+                            fa334eb81ce9fe27f6a132cafd03190a: ref!! 973d3192-e6ee-4101-b2b8-0e6324b2d90c
+                            9ec495ba8fd7dc052271a963003670c3: ref!! abdb2ac5-c373-400c-a6da-a95db2f656f7
+                            ba2906b6f805dac62d5becdffb516214: ref!! f76df97b-4f32-4255-a40e-7e4a9d51689e
+                            9078a71e467864f51136b2cd09558357: ref!! 1704ddcf-12a5-4959-bfe1-f242b2dd4de7
+        -   Entity:
                 Id: 783a8a5c-ff64-4caa-a974-549d92dae18b
                 Name: UI
                 Components:
@@ -81,6 +122,7 @@ Hierarchy:
                         Id: 38ff5eba-31fa-4525-9671-a11a09b59c40
                         RootSphere: ref!! b8c9d471-885c-4aad-8bb4-3a4f2aa827de
                         SpherePrefab: edfb63de-5cd3-4058-a73f-eb69f42ae66e:SpherePrefab
+                        ChildScene: 2479b944-494c-4409-9e8f-ce9367398fdc:ChildScene
         -   Entity:
                 Id: 7e70ce27-a0e8-41e5-98b1-3863afe32d07
                 Name: Ground
@@ -92,9 +134,57 @@ Hierarchy:
                         Scale: {X: 1.0, Y: 1.0, Z: 1.0}
                         Children: {}
                     fc2c7183637d0c3e41cd5dd4beede141: !ModelComponent
-                        Id: ac696463-3701-4a05-8264-d5114dac20b0
+                        Id: 6dfcf12d-8e4e-40f0-b19b-58d196a96a1e
                         Model: 4962f52b-072c-45b1-9f07-26f4b36ab08e:Ground
                         Materials: {}
+        -   Entity:
+                Id: 7edf68e5-a71e-4b8d-bd52-6a6f474bb76f
+                Name: ObjEntity
+                Components:
+                    d991d84e99d236f083b5b88ff90568c3: !TransformComponent
+                        Id: 1704ddcf-12a5-4959-bfe1-f242b2dd4de7
+                        Position: {X: 5.0, Y: 0.0, Z: 0.0}
+                        Rotation: {X: 0.0, Y: 0.0, Z: 0.0, W: 1.0}
+                        Scale: {X: 1.0, Y: 1.0, Z: 1.0}
+                        Children: {}
+                    9422fa417ba835cdbc509dcd29c7639f: !StrideEnchanted.Example.ObjectParametersScript,StrideEnchanted.Example
+                        Id: 4296ccc4-7cdb-46aa-be24-25deb3709006
+                        ByteFieldValue: 0
+                        ByteNullableFieldValue: null
+                        IntFieldValue: 0
+                        IntNullableFieldValue: null
+                        LongFieldValue: 0
+                        LongNullableFieldValue: null
+                        BytePropertyValue: 0
+                        ByteNullablePropertyValue: null
+                        IntPropertyValue: 0
+                        IntNullablePropertyValue: null
+                        LongPropertyValue: 0
+                        LongNullablePropertyValue: null
+        -   Entity:
+                Id: 92d63b65-177a-4dfb-be4b-cff92a97628b
+                Name: VectorEntity
+                Components:
+                    d991d84e99d236f083b5b88ff90568c3: !TransformComponent
+                        Id: f76df97b-4f32-4255-a40e-7e4a9d51689e
+                        Position: {X: 4.0, Y: 0.0, Z: 0.0}
+                        Rotation: {X: 0.0, Y: 0.0, Z: 0.0, W: 1.0}
+                        Scale: {X: 1.0, Y: 1.0, Z: 1.0}
+                        Children: {}
+                    f8c8fc93ffb75590a6cfe358ef8bf89a: !StrideEnchanted.Example.VectorParametersScript,StrideEnchanted.Example
+                        Id: 2a17788e-13be-424b-9afe-845a10ab0f84
+                        ByteFieldValue: 0
+                        ByteNullableFieldValue: null
+                        IntFieldValue: 0
+                        IntNullableFieldValue: null
+                        LongFieldValue: 0
+                        LongNullableFieldValue: null
+                        BytePropertyValue: 0
+                        ByteNullablePropertyValue: null
+                        IntPropertyValue: 0
+                        IntNullablePropertyValue: null
+                        LongPropertyValue: 0
+                        LongNullablePropertyValue: null
         -   Entity:
                 Id: b8c9d471-885c-4aad-8bb4-3a4f2aa827de
                 Name: Sphere
@@ -106,13 +196,37 @@ Hierarchy:
                         Scale: {X: 1.0, Y: 1.0, Z: 1.0}
                         Children: {}
                     f063c14eaa4c9ea8c871c1168272d9f4: !ModelComponent
-                        Id: d292e588-025e-402b-adbf-264bcbad2170
+                        Id: d19144e2-9251-4911-8a81-34a6a0e82f9a
                         Model: 44e23982-216e-4fe1-a9d8-dd564a2b5f41:Sphere
                         Materials: {}
                     9e55cbf43421f12ce3756f401fdac7d8: !StrideEnchanted.Example.TestPropertyChangingScript,StrideEnchanted.Example
-                        Id: b8fdcf4e-478f-4546-bb8e-cf8f422c568d
+                        Id: 47c33028-9f87-4558-b79e-7a75ebcdeeb4
                         RandomFieldValue: 0
                         RandomPropertyValue: 0
+        -   Entity:
+                Id: dc5ecece-4e63-4c53-af21-1ce7878f0dcd
+                Name: IntEntity
+                Components:
+                    d991d84e99d236f083b5b88ff90568c3: !TransformComponent
+                        Id: a17abfc2-cd53-4987-8c15-e44694401044
+                        Position: {X: 1.0, Y: 0.0, Z: 0.0}
+                        Rotation: {X: 0.0, Y: 0.0, Z: 0.0, W: 1.0}
+                        Scale: {X: 1.0, Y: 1.0, Z: 1.0}
+                        Children: {}
+                    421e946e8679b131baa9b85b339e944f: !StrideEnchanted.Example.IntParametersScript,StrideEnchanted.Example
+                        Id: 4a752329-f488-4a47-9a85-80ec1701c4f6
+                        ByteFieldValue: 0
+                        ByteNullableFieldValue: null
+                        IntFieldValue: 0
+                        IntNullableFieldValue: null
+                        LongFieldValue: 0
+                        LongNullableFieldValue: null
+                        BytePropertyValue: 0
+                        ByteNullablePropertyValue: null
+                        IntPropertyValue: 0
+                        IntNullablePropertyValue: null
+                        LongPropertyValue: 0
+                        LongNullablePropertyValue: null
         -   Entity:
                 Id: de8ba774-391b-4a70-b73e-b4d0d9496420
                 Name: Skybox
@@ -130,3 +244,33 @@ Hierarchy:
                         Id: 0fc1b4a6-7a63-4faf-97fc-51fba5dabf50
                         Type: !LightSkybox
                             Skybox: 6a6cdf75-abc6-42e4-8cb0-0e850ebca5aa:Skybox
+        -   Entity:
+                Id: dfdd1855-81f6-4bb5-8d8b-fe69b2531e69
+                Name: StrEntity
+                Components:
+                    d991d84e99d236f083b5b88ff90568c3: !TransformComponent
+                        Id: abdb2ac5-c373-400c-a6da-a95db2f656f7
+                        Position: {X: 3.0, Y: 0.0, Z: 0.0}
+                        Rotation: {X: 0.0, Y: 0.0, Z: 0.0, W: 1.0}
+                        Scale: {X: 1.0, Y: 1.0, Z: 1.0}
+                        Children: {}
+                    900626ed72be588575b49be5adec49a8: !StrideEnchanted.Example.StringParametersScript,StrideEnchanted.Example
+                        Id: a7bb02c2-7a57-408c-97ab-1bb077724e48
+                        StringFieldValue: null
+                        StringPropertyValue: null
+        -   Entity:
+                Id: ed3bbf37-1fc2-44f5-a989-fe1a589afff8
+                Name: BoolEntity
+                Components:
+                    d991d84e99d236f083b5b88ff90568c3: !TransformComponent
+                        Id: 69e4adf4-1798-4dd3-8f55-2ec13dfe840e
+                        Position: {X: 0.0, Y: 0.0, Z: 0.0}
+                        Rotation: {X: 0.0, Y: 0.0, Z: 0.0, W: 1.0}
+                        Scale: {X: 1.0, Y: 1.0, Z: 1.0}
+                        Children: {}
+                    88a805a2ae3a2f74474e24d2f049fcaa: !StrideEnchanted.Example.BoolParametersScript,StrideEnchanted.Example
+                        Id: 023c2abe-8f58-4645-bc25-b835a2e378aa
+                        BoolFieldValue: false
+                        BoolNullableFieldValue: null
+                        BoolPropertyValue: false
+                        BoolNullablePropertyValue: null
