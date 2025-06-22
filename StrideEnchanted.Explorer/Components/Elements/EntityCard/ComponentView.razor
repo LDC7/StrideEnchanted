@@ -9,7 +9,7 @@
     <MudExpansionPanels MultiExpansion="true">
       @foreach (var component in this.Entity.Components)
       {
-        <EntityComponentView Component="@component" />
+        <EntityComponentView @key="@component.Id" Component="@component" />
       }
     </MudExpansionPanels>
   </MudCardContent>

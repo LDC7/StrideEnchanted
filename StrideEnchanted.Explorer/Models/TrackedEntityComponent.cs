@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using Stride.Core;
@@ -15,7 +14,7 @@ internal sealed class TrackedEntityComponent : ITrackedEntityComponent
   #region Fields and Properties
 
   private readonly Type componentType;
-  private readonly ImmutableDictionary<string, TrackedEntityComponentParameter> parameters;
+  private readonly TrackedEntityComponentParameter[] parameters;
 
   public EntityComponent Component { get; }
 
@@ -40,7 +39,8 @@ internal sealed class TrackedEntityComponent : ITrackedEntityComponent
     this.parameters = fields.Concat(properties)
       .Where(p => p.MemberInfo.GetCustomAttribute<DataMemberIgnoreAttribute>() == null)
       .Where(p => p.MemberInfo.GetCustomAttribute<DisplayAttribute>()?.Browsable != false)
-      .ToImmutableDictionary(p => p.Name, p => p);
+      .OrderBy(p => p.Name)
+      .ToArray();
   }
 
   #endregion
@@ -75,12 +75,12 @@ internal sealed class TrackedEntityComponent : ITrackedEntityComponent
 
   public string Name => this.componentType.Name;
 
-  public IEnumerable<ITrackedEntityComponentParameter> Parameters => this.parameters.Values;
+  public IEnumerable<ITrackedEntityComponentParameter> Parameters => this.parameters;
 
   public void Dispose()
   {
-    foreach (var pair in this.parameters)
-      pair.Value.Dispose();
+    foreach (var parameter in this.parameters)
+      parameter.Dispose();
   }
 
   #endregion

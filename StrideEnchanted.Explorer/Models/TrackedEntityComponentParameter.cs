@@ -40,6 +40,7 @@ internal sealed class TrackedEntityComponentParameter : ITrackedEntityComponentP
     this.MemberInfo = memberInfo;
     this.dataTrackingTimer = dataTrackingTimer;
     this.ParameterType = parameterType;
+    this.Id = $"{this.component.Id:N}:{this.Name}";
 
     this.dataTrackingTimer.Subscribe(this.Invalidate);
   }
@@ -63,6 +64,8 @@ internal sealed class TrackedEntityComponentParameter : ITrackedEntityComponentP
   #endregion
 
   #region ITrackedEntityComponentParameter
+
+  public string Id { get; }
 
   public string Name => this.MemberInfo.Name;
 

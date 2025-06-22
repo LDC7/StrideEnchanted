@@ -31,12 +31,12 @@ else
     <MudItem xs="8" Style="height: 100%; overflow-y: auto;">
       @if (this.Selected is ITrackedScene selectedScene)
       {
-        <SceneCardView Scene="@selectedScene" />
+        <SceneCardView @key="@selectedScene.Id" Scene="@selectedScene" />
       }
 
       @if (this.Selected is ITrackedEntity selectedEntity)
       {
-        <StrideEnchanted.Explorer.Components.Elements.EntityCard.ComponentView Entity="@selectedEntity" />
+        <StrideEnchanted.Explorer.Components.Elements.EntityCard.ComponentView @key="@selectedEntity.Id" Entity="@selectedEntity" />
       }
     </MudItem>
 
