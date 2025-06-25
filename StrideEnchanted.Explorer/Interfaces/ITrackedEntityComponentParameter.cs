@@ -5,7 +5,7 @@ namespace StrideEnchanted.Explorer.Interfaces;
 
 public interface ITrackedEntityComponentParameter : INotifyPropertyChanged, IDisposable
 {
-  string Id { get; }
+  Guid Id { get; }
 
   string Name { get; }
 

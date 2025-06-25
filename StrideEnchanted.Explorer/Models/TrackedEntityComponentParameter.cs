@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using StrideEnchanted.Explorer.Interfaces;
 using StrideEnchanted.Explorer.Services;
 
@@ -14,6 +15,7 @@ internal sealed class TrackedEntityComponentParameter : ITrackedEntityComponentP
   private static readonly PropertyChangedEventArgs valuePropertyChangedEventArgs = new(nameof(ITrackedEntityComponentParameter.Value));
 
   private readonly DataTrackingTimer dataTrackingTimer;
+  private readonly ILogger<TrackedEntityComponentParameter> logger;
   private readonly TrackedEntityComponent component;
 
   private object? cachedValue;
@@ -24,25 +26,42 @@ internal sealed class TrackedEntityComponentParameter : ITrackedEntityComponentP
 
   #region Constructor
 
-  public TrackedEntityComponentParameter(TrackedEntityComponent component, PropertyInfo propertyInfo, DataTrackingTimer dataTrackingTimer)
-    : this(component, propertyInfo, dataTrackingTimer, propertyInfo.PropertyType)
+  public TrackedEntityComponentParameter(
+    TrackedEntityComponent component,
+    PropertyInfo propertyInfo,
+    DataTrackingTimer dataTrackingTimer,
+    ILoggerFactory loggerFactory)
+    : this(component, propertyInfo, dataTrackingTimer, propertyInfo.PropertyType, loggerFactory)
   {
   }
 
-  public TrackedEntityComponentParameter(TrackedEntityComponent component, FieldInfo fieldInfo, DataTrackingTimer dataTrackingTimer)
-    : this(component, fieldInfo, dataTrackingTimer, fieldInfo.FieldType)
+  public TrackedEntityComponentParameter(
+    TrackedEntityComponent component,
+    FieldInfo fieldInfo,
+    DataTrackingTimer dataTrackingTimer,
+    ILoggerFactory loggerFactory)
+    : this(component, fieldInfo, dataTrackingTimer, fieldInfo.FieldType, loggerFactory)
   {
   }
 
-  private TrackedEntityComponentParameter(TrackedEntityComponent component, MemberInfo memberInfo, DataTrackingTimer dataTrackingTimer, Type parameterType)
+  private TrackedEntityComponentParameter(
+    TrackedEntityComponent component,
+    MemberInfo memberInfo,
+    DataTrackingTimer dataTrackingTimer,
+    Type parameterType,
+    ILoggerFactory loggerFactory)
   {
+    this.logger = loggerFactory.CreateLogger<TrackedEntityComponentParameter>();
     this.component = component;
     this.MemberInfo = memberInfo;
     this.dataTrackingTimer = dataTrackingTimer;
     this.ParameterType = parameterType;
-    this.Id = $"{this.component.Id:N}:{this.Name}";
+    this.Id = UUIDNext.Uuid.NewNameBased(this.component.Id, this.Name);
 
+    this.cachedValue = this.component.GetValue(this);
     this.dataTrackingTimer.Subscribe(this.Invalidate);
+
+    this.logger.LogTrace("Created {id}", this.Id);
   }
 
   #endregion
@@ -65,7 +84,7 @@ internal sealed class TrackedEntityComponentParameter : ITrackedEntityComponentP
 
   #region ITrackedEntityComponentParameter
 
-  public string Id { get; }
+  public Guid Id { get; }
 
   public string Name => this.MemberInfo.Name;
 
@@ -87,6 +106,8 @@ internal sealed class TrackedEntityComponentParameter : ITrackedEntityComponentP
 
   public void Dispose()
   {
+    this.logger.LogTrace("Dispose {id}", this.Id);
+
     this.dataTrackingTimer.Unsubscribe(this.Invalidate);
   }
 

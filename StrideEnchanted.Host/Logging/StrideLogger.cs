@@ -18,7 +18,7 @@ internal sealed class StrideLogger : Microsoft.Extensions.Logging.ILogger
 
   public StrideLogger(string categoryName, IExternalScopeProvider scopeProvider)
   {
-    this.strideLogger = GlobalLogger.GetLogger(categoryName);
+    this.strideLogger = GlobalLogger.GetLogger(categoryName, LogMessageType.Debug);
     this.scopeProvider = scopeProvider;
   }
 
@@ -62,6 +62,8 @@ internal sealed class StrideLogger : Microsoft.Extensions.Logging.ILogger
     switch (logLevel)
     {
       case LogLevel.Critical:
+        this.strideLogger.Fatal(message);
+        break;
       case LogLevel.Error:
         this.strideLogger.Error(message);
         break;
@@ -72,8 +74,10 @@ internal sealed class StrideLogger : Microsoft.Extensions.Logging.ILogger
         this.strideLogger.Info(message);
         break;
       case LogLevel.Debug:
-      case LogLevel.Trace:
         this.strideLogger.Debug(message);
+        break;
+      case LogLevel.Trace:
+        this.strideLogger.Verbose(message);
         break;
       default:
         this.strideLogger.Info(message);

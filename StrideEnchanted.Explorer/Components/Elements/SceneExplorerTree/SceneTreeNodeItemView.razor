@@ -10,15 +10,19 @@
                  Selected="@(this.Selected == (object)this.Scene)"
                  CanExpand="@this.CanExpand"
                  ExpandButtonIcon="@(this.CanExpand ? Icons.Material.Filled.ArrowRight : null)"
-                 Expanded="@true"
+                 Expanded="@this.Expanded"
+                 ExpandedChanged="@this.HandleExpand"
                  OnClick="@this.HandleClick">
-  @foreach (var childScene in this.Scene.Children)
+  @if (this.needRenderChildComponents)
   {
-    <SceneTreeNodeItemView Scene="@childScene" Selected="@this.Selected" SelectedChanged="@this.SelectedChanged" />
-  }
-  @foreach (var entity in this.Scene.Entities)
-  {
-    <EntityTreeNodeItemView Entity="@entity" Selected="@this.Selected" SelectedChanged="@this.SelectedChanged" />
+    @foreach (var childScene in this.Scene.Children)
+    {
+      <SceneTreeNodeItemView Scene="@childScene" Selected="@this.Selected" SelectedChanged="@this.SelectedChanged" />
+    }
+    @foreach (var entity in this.Scene.Entities)
+    {
+      <EntityTreeNodeItemView Entity="@entity" Selected="@this.Selected" SelectedChanged="@this.SelectedChanged" />
+    }
   }
 </MudTreeViewItem>
 
@@ -28,16 +32,33 @@
   public required ITrackedScene Scene { get; set; } = default!;
 
   [Parameter]
+  public bool Expanded { get; set; }
+
+  [Parameter]
   [EditorRequired]
   public object? Selected { get; set; }
 
-  private bool CanExpand => this.Scene.Entities.Any() || this.Scene.Children.Any();
+  private bool needRenderChildComponents;
+
+  private bool CanExpand => this.Scene.Children.Any() || this.Scene.Entities.Any();
 
   [Parameter]
   public EventCallback<object?> SelectedChanged { get; set; }
 
+  protected override Task OnInitializedAsync()
+  {
+    this.needRenderChildComponents = this.Expanded;
+    return base.OnInitializedAsync();
+  }
+
   private Task HandleClick(MouseEventArgs args)
   {
     return this.SelectedChanged.InvokeAsync(this.Scene);
+  }
+
+  private void HandleExpand(bool value)
+  {
+    if (!this.needRenderChildComponents && value)
+      this.needRenderChildComponents = true;
   }
 }

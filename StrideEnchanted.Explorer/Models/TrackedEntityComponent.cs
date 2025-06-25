@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 using Stride.Core;
 using Stride.Engine;
 using StrideEnchanted.Explorer.Interfaces;
@@ -13,8 +14,12 @@ internal sealed class TrackedEntityComponent : ITrackedEntityComponent
 {
   #region Fields and Properties
 
+  private readonly ILoggerFactory loggerFactory;
+  private readonly ILogger<TrackedEntityComponent> logger;
+  private readonly DataTrackingTimer dataTrackingTimer;
   private readonly Type componentType;
-  private readonly TrackedEntityComponentParameter[] parameters;
+
+  private readonly Lazy<TrackedEntityComponentParameter[]> lazyParameters;
 
   public EntityComponent Component { get; }
 
@@ -22,30 +27,43 @@ internal sealed class TrackedEntityComponent : ITrackedEntityComponent
 
   #region TrackedEntityComponent
 
-  public TrackedEntityComponent(EntityComponent component, DataTrackingTimer dataTrackingTimer)
+  public TrackedEntityComponent(
+    EntityComponent component,
+    DataTrackingTimer dataTrackingTimer,
+    ILoggerFactory loggerFactory)
   {
+    this.loggerFactory = loggerFactory;
+    this.logger = this.loggerFactory.CreateLogger<TrackedEntityComponent>();
+    this.dataTrackingTimer = dataTrackingTimer;
     this.Component = component;
     this.componentType = this.Component.GetType();
 
-    var fields = this.componentType
-      .GetFields(BindingFlags.Public | BindingFlags.Instance)
-      .Where(f => !f.IsInitOnly)
-      .Select(f => new TrackedEntityComponentParameter(this, f, dataTrackingTimer));
-    var properties = this.componentType
-      .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-      .Where(p => p.CanRead && p.CanWrite)
-      .Select(p => new TrackedEntityComponentParameter(this, p, dataTrackingTimer));
+    this.lazyParameters = new Lazy<TrackedEntityComponentParameter[]>(this.CreateParameters);
 
-    this.parameters = fields.Concat(properties)
-      .Where(p => p.MemberInfo.GetCustomAttribute<DataMemberIgnoreAttribute>() == null)
-      .Where(p => p.MemberInfo.GetCustomAttribute<DisplayAttribute>()?.Browsable != false)
-      .OrderBy(p => p.Name)
-      .ToArray();
+    this.logger.LogTrace("Created {id}", this.Id);
   }
 
   #endregion
 
   #region Methods
+
+  private TrackedEntityComponentParameter[] CreateParameters()
+  {
+    var fields = this.componentType
+      .GetFields(BindingFlags.Public | BindingFlags.Instance)
+      .Where(f => !f.IsInitOnly)
+      .Select(f => new TrackedEntityComponentParameter(this, f, this.dataTrackingTimer, this.loggerFactory));
+    var properties = this.componentType
+      .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+      .Where(p => p.CanRead && p.CanWrite)
+      .Select(p => new TrackedEntityComponentParameter(this, p, this.dataTrackingTimer, this.loggerFactory));
+
+    return fields.Concat(properties)
+      .Where(p => p.MemberInfo.GetCustomAttribute<DataMemberIgnoreAttribute>() == null)
+      .Where(p => p.MemberInfo.GetCustomAttribute<DisplayAttribute>()?.Browsable != false)
+      .OrderBy(p => p.Name)
+      .ToArray();
+  }
 
   internal object? GetValue(TrackedEntityComponentParameter parameter)
   {
@@ -75,12 +93,17 @@ internal sealed class TrackedEntityComponent : ITrackedEntityComponent
 
   public string Name => this.componentType.Name;
 
-  public IEnumerable<ITrackedEntityComponentParameter> Parameters => this.parameters;
+  public IEnumerable<ITrackedEntityComponentParameter> Parameters => this.lazyParameters.Value;
 
   public void Dispose()
   {
-    foreach (var parameter in this.parameters)
-      parameter.Dispose();
+    this.logger.LogTrace("Dispose {id}", this.Id);
+
+    if (this.lazyParameters.IsValueCreated)
+    {
+      foreach (var parameter in this.lazyParameters.Value)
+        parameter.Dispose();
+    }
   }
 
   #endregion

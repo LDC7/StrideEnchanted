@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using Microsoft.Extensions.Logging;
 using Stride.Engine;
 using StrideEnchanted.Explorer.Services;
 
@@ -13,36 +14,53 @@ internal sealed class TrackedSceneInstance : INotifyPropertyChanged, IDisposable
 
   private readonly SceneInstance sceneInstance;
   private readonly DataTrackingTimer dataTrackingTimer;
+  private readonly ILoggerFactory loggerFactory;
+  private readonly ILogger<TrackedSceneInstance> logger;
 
-  public TrackedScene? RootScene { get; private set; }
+  private Lazy<TrackedScene?> lazyRootScene;
+
+  public TrackedScene? RootScene => this.lazyRootScene.Value;
 
   #endregion
 
   #region Constructor
 
-  public TrackedSceneInstance(SceneInstance sceneInstance, DataTrackingTimer dataTrackingTimer)
+  public TrackedSceneInstance(
+    SceneInstance sceneInstance,
+    DataTrackingTimer dataTrackingTimer,
+    ILoggerFactory loggerFactory)
   {
+    this.loggerFactory = loggerFactory;
+    this.logger = this.loggerFactory.CreateLogger<TrackedSceneInstance>();
     this.sceneInstance = sceneInstance;
     this.dataTrackingTimer = dataTrackingTimer;
 
+    this.lazyRootScene = new Lazy<TrackedScene?>(this.CreateRootScene);
     this.sceneInstance.RootSceneChanged += this.HandleRootSceneChanged;
-    if (sceneInstance.RootScene != null)
-      this.RootScene = new TrackedScene(this.sceneInstance.RootScene, this.dataTrackingTimer);
+
+    this.logger.LogTrace("Created for {name}", this.sceneInstance.Name);
   }
 
   #endregion
 
   #region Methods
 
+  private TrackedScene? CreateRootScene()
+  {
+    return this.sceneInstance.RootScene != null
+      ? new TrackedScene(this.sceneInstance.RootScene, this.dataTrackingTimer, this.loggerFactory)
+      : null;
+  }
+
   private void HandleRootSceneChanged(object? sender, EventArgs e)
   {
+    if (!this.lazyRootScene.IsValueCreated)
+      return;
+
     if (this.sceneInstance.RootScene != this.RootScene?.Scene)
     {
       this.RootScene?.Dispose();
-
-      this.RootScene = this.sceneInstance.RootScene != null
-        ? new TrackedScene(this.sceneInstance.RootScene, this.dataTrackingTimer)
-        : null;
+      this.lazyRootScene = new Lazy<TrackedScene?>(this.CreateRootScene);
 
       this.PropertyChanged?.Invoke(this, rootScenePropertyChangedEventArgs);
     }
@@ -60,6 +78,7 @@ internal sealed class TrackedSceneInstance : INotifyPropertyChanged, IDisposable
 
   public void Dispose()
   {
+    this.logger.LogTrace("Dispose for {name}", this.sceneInstance.Name);
     this.sceneInstance.RootSceneChanged -= this.HandleRootSceneChanged;
     this.RootScene?.Dispose();
   }

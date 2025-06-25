@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Stride.Engine;
 using StrideEnchanted.Explorer.Interfaces;
 using StrideEnchanted.Explorer.Services;
@@ -19,8 +20,11 @@ internal sealed class TrackedEntity : ITrackedEntity
   private static readonly PropertyChangedEventArgs componentsPropertyChangedEventArgs = new(nameof(ITrackedEntity.Components));
 
   private readonly DataTrackingTimer dataTrackingTimer;
-  private readonly List<TrackedEntity> children;
-  private readonly List<TrackedEntityComponent> components;
+  private readonly ILoggerFactory loggerFactory;
+  private readonly ILogger<TrackedEntity> logger;
+
+  private readonly Lazy<List<TrackedEntity>> lazyChildren;
+  private readonly Lazy<List<TrackedEntityComponent>> lazyComponents;
 
   public Entity Entity { get; }
 
@@ -28,26 +32,42 @@ internal sealed class TrackedEntity : ITrackedEntity
 
   #region Constructor
 
-  public TrackedEntity(Entity entity, DataTrackingTimer dataTrackingTimer)
+  public TrackedEntity(
+    Entity entity,
+    DataTrackingTimer dataTrackingTimer,
+    ILoggerFactory loggerFactory)
   {
+    this.loggerFactory = loggerFactory;
+    this.logger = this.loggerFactory.CreateLogger<TrackedEntity>();
     this.Entity = entity;
     this.Name = entity.Name;
     this.dataTrackingTimer = dataTrackingTimer;
 
-    this.children = this.Entity.GetChildren()
-      .Select(c => new TrackedEntity(c, this.dataTrackingTimer))
-      .ToList();
-
-    this.components = this.Entity.Components
-      .Select(c => new TrackedEntityComponent(c, this.dataTrackingTimer))
-      .ToList();
+    this.lazyChildren = new Lazy<List<TrackedEntity>>(this.CreateChildren);
+    this.lazyComponents = new Lazy<List<TrackedEntityComponent>>(this.CreateComponents);
 
     this.dataTrackingTimer.Subscribe(this.Invalidate);
+
+    this.logger.LogTrace("Created {id} for {name}", this.Id, this.Entity.Name);
   }
 
   #endregion
 
   #region Methods
+
+  private List<TrackedEntity> CreateChildren()
+  {
+    return this.Entity.GetChildren()
+      .Select(c => new TrackedEntity(c, this.dataTrackingTimer, this.loggerFactory))
+      .ToList();
+  }
+
+  private List<TrackedEntityComponent> CreateComponents()
+  {
+    return this.Entity.Components
+      .Select(c => new TrackedEntityComponent(c, this.dataTrackingTimer, this.loggerFactory))
+      .ToList();
+  }
 
   private async ValueTask Invalidate()
   {
@@ -57,17 +77,21 @@ internal sealed class TrackedEntity : ITrackedEntity
       this.PropertyChanged?.Invoke(this, namePropertyChangedEventArgs);
     }
 
-    await this.InvalidateChildren();
-    await this.InvalidateComponents();
+    if (this.lazyChildren.IsValueCreated)
+      await this.InvalidateChildren();
+
+    if (this.lazyComponents.IsValueCreated)
+      await this.InvalidateComponents();
   }
 
   private ValueTask InvalidateChildren()
   {
+    var children = this.lazyChildren.Value;
     var actual = this.Entity.GetChildren().ToImmutableArray();
     var added = actual
-      .Where(e => !this.children.Any(c => c.Entity == e))
+      .Where(e => !children.Any(c => c.Entity == e))
       .ToImmutableArray();
-    var removed = this.children
+    var removed = children
       .Where(c => !actual.Any(e => c.Entity == e))
       .ToImmutableArray();
 
@@ -76,12 +100,12 @@ internal sealed class TrackedEntity : ITrackedEntity
 
     foreach (var removedChild in removed)
     {
-      this.children.Remove(removedChild);
+      children.Remove(removedChild);
       removedChild.Dispose();
     }
 
     foreach (var addedChild in added)
-      this.children.Add(new TrackedEntity(addedChild, this.dataTrackingTimer));
+      children.Add(new TrackedEntity(addedChild, this.dataTrackingTimer, this.loggerFactory));
 
     this.PropertyChanged?.Invoke(this, childrenPropertyChangedEventArgs);
     return new ValueTask();
@@ -89,11 +113,12 @@ internal sealed class TrackedEntity : ITrackedEntity
 
   private ValueTask InvalidateComponents()
   {
+    var components = this.lazyComponents.Value;
     var actual = this.Entity.Components.ToImmutableArray();
     var added = actual
-      .Where(e => !this.components.Any(c => c.Component == e))
+      .Where(e => !components.Any(c => c.Component == e))
       .ToImmutableArray();
-    var removed = this.components
+    var removed = components
       .Where(c => !actual.Any(e => c.Component == e))
       .ToImmutableArray();
 
@@ -102,12 +127,12 @@ internal sealed class TrackedEntity : ITrackedEntity
 
     foreach (var removedComponent in removed)
     {
-      this.components.Remove(removedComponent);
+      components.Remove(removedComponent);
       removedComponent.Dispose();
     }
 
     foreach (var addedComponent in added)
-      this.components.Add(new TrackedEntityComponent(addedComponent, this.dataTrackingTimer));
+      components.Add(new TrackedEntityComponent(addedComponent, this.dataTrackingTimer, this.loggerFactory));
 
     this.PropertyChanged?.Invoke(this, componentsPropertyChangedEventArgs);
     return new ValueTask();
@@ -121,19 +146,29 @@ internal sealed class TrackedEntity : ITrackedEntity
 
   public string Name { get; private set; }
 
-  public IReadOnlyCollection<ITrackedEntity> Children => this.children;
+  public IReadOnlyCollection<ITrackedEntity> Children => this.lazyChildren.Value;
 
-  public IReadOnlyCollection<ITrackedEntityComponent> Components => this.components;
+  public IReadOnlyCollection<ITrackedEntityComponent> Components => this.lazyComponents.Value;
 
   public event PropertyChangedEventHandler? PropertyChanged;
 
   public void Dispose()
   {
+    this.logger.LogTrace("Dispose {id} for {name}", this.Id, this.Entity.Name);
+
     this.dataTrackingTimer.Unsubscribe(this.Invalidate);
-    foreach (var child in this.children)
-      child.Dispose();
-    foreach (var component in this.components)
-      component.Dispose();
+
+    if (this.lazyChildren.IsValueCreated)
+    {
+      foreach (var child in this.lazyChildren.Value)
+        child.Dispose();
+    }
+
+    if (this.lazyComponents.IsValueCreated)
+    {
+      foreach (var component in this.lazyComponents.Value)
+        component.Dispose();
+    }
   }
 
   #endregion

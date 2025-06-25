@@ -46,7 +46,8 @@ public static class StrideApplicationBuilderExtensions
       {
         loggingBuilder
           .ClearProviders()
-          .AddFilter("Microsoft.AspNetCore", LogLevel.Warning);
+          .AddFilter("Microsoft.AspNetCore", LogLevel.Warning)
+          .AddConfiguration(configuration.GetSection("Logging"));
 
         foreach (var loggerProvider in loggerProviders)
           loggingBuilder.AddProvider(loggerProvider);

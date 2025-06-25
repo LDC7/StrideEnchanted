@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>0.0.1.0</Version>
+    <Version>4.2.02381.0</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <InformationalVersion>$(Version)</InformationalVersion>
@@ -29,8 +29,8 @@
 
   <ItemGroup Condition="'$(UsePackageReferences)' == 'true'">
     <None Include="../README.md" Pack="true" PackagePath="" />
-    <PackageReference Include="StrideEnchanted.Explorer" Version="0.0.1" />
-    <PackageReference Include="StrideEnchanted.Host" Version="0.0.1" />
+    <PackageReference Include="StrideEnchanted.Explorer" Version="4.2.02381.0" />
+    <PackageReference Include="StrideEnchanted.Host" Version="4.2.02381.0" />
   </ItemGroup>
 
 </Project>

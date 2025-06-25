@@ -13,10 +13,14 @@
                  Selected="@(this.Selected == (object)this.Entity)"
                  CanExpand="@this.CanExpand"
                  ExpandButtonIcon="@(this.CanExpand ? Icons.Material.Filled.ArrowRight : null)"
+                 ExpandedChanged="@this.HandleExpand"
                  OnClick="@this.HandleClick">
-  @foreach (var childEntity in this.Entity.Children)
+  @if (this.needRenderChildComponents)
   {
-    <EntityTreeNodeItemView Entity="@childEntity" Selected="@this.Selected" SelectedChanged="@this.SelectedChanged" />
+    @foreach (var childEntity in this.Entity.Children)
+    {
+      <EntityTreeNodeItemView Entity="@childEntity" Selected="@this.Selected" SelectedChanged="@this.SelectedChanged" />
+    }
   }
 </MudTreeViewItem>
 
@@ -32,6 +36,8 @@
   [Parameter]
   public EventCallback<object?> SelectedChanged { get; set; }
 
+  private bool needRenderChildComponents;
+
   private bool CanExpand => this.Entity.Children.Any();
 
   protected override Task OnInitializedAsync()
@@ -43,6 +49,12 @@
   private Task HandleClick(MouseEventArgs args)
   {
     return this.SelectedChanged.InvokeAsync(this.Entity);
+  }
+
+  private void HandleExpand(bool value)
+  {
+    if (!this.needRenderChildComponents && value)
+      this.needRenderChildComponents = true;
   }
 
   private void OnPropertyChanged(object? sender, PropertyChangedEventArgs _)

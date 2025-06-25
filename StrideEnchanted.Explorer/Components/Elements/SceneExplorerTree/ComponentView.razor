@@ -1,4 +1,5 @@
-﻿@using MudBlazor
+﻿@using Microsoft.Extensions.Logging
+@using MudBlazor
 @using Stride.Engine
 @using StrideEnchanted.Explorer.Models
 @using StrideEnchanted.Explorer.Services
@@ -6,6 +7,7 @@
 @implements IDisposable
 
 @inject DataTrackingTimer Timer;
+@inject ILoggerFactory LoggerFactory;
 
 <MudCard Class="p-2" Elevation="1" Style="height: 100%; overflow-y:auto;">
   <MudCardHeader>
@@ -23,6 +25,7 @@
                    SelectionMode="@SelectionMode.SingleSelection"
                    SelectedValue="@this.Selected">
         <SceneTreeNodeItemView Scene="@this.trackedSceneInstance.RootScene"
+                               Expanded="@true"
                                Selected="@this.Selected"
                                SelectedChanged="@this.SelectedChanged" />
       </MudTreeView>
@@ -46,7 +49,7 @@
 
   protected override Task OnInitializedAsync()
   {
-    this.trackedSceneInstance = new TrackedSceneInstance(this.SceneInstance, this.Timer);
+    this.trackedSceneInstance = new TrackedSceneInstance(this.SceneInstance, this.Timer, this.LoggerFactory);
     return base.OnInitializedAsync();
   }
 

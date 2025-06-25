@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 using Stride.Core.Collections;
 using Stride.Engine;
 using StrideEnchanted.Explorer.Interfaces;
@@ -19,10 +20,13 @@ internal sealed class TrackedScene : ITrackedScene
   private static readonly PropertyChangedEventArgs entitiesPropertyChangedEventArgs = new(nameof(ITrackedScene.Entities));
 
   private readonly DataTrackingTimer dataTrackingTimer;
+  private readonly ILoggerFactory loggerFactory;
+  private readonly ILogger<TrackedScene> logger;
+
   private readonly ReaderWriterLockSlim childrenLock = new();
-  private readonly List<TrackedScene> children;
+  private readonly Lazy<List<TrackedScene>> lazyChildren;
   private readonly ReaderWriterLockSlim entitiesLock = new();
-  private readonly List<TrackedEntity> entities;
+  private readonly Lazy<List<TrackedEntity>> lazyEntities;
 
   public Scene Scene { get; }
 
@@ -30,40 +34,54 @@ internal sealed class TrackedScene : ITrackedScene
 
   #region Constructor
 
-  public TrackedScene(Scene scene, DataTrackingTimer dataTrackingTimer)
+  public TrackedScene(
+    Scene scene,
+    DataTrackingTimer dataTrackingTimer,
+    ILoggerFactory loggerFactory)
   {
+    this.loggerFactory = loggerFactory;
+    this.logger = this.loggerFactory.CreateLogger<TrackedScene>();
     this.Scene = scene;
     this.dataTrackingTimer = dataTrackingTimer;
 
+    this.lazyChildren = new Lazy<List<TrackedScene>>(this.CreateChildren);
     this.Scene.Children.CollectionChanged += this.HandleChildScenesChanged;
-    this.children = this.Scene.Children
-      .Select(s => new TrackedScene(s, this.dataTrackingTimer))
-      .ToList();
 
+    this.lazyEntities = new Lazy<List<TrackedEntity>>(this.CreateEntities);
     this.Scene.Entities.CollectionChanged += this.HandleEntitiesChanged;
-    this.entities = this.Scene.Entities
-      .Select(e => new TrackedEntity(e, this.dataTrackingTimer))
-      .ToList();
+
+    this.logger.LogTrace("Created {id} for {name}", this.Id, this.Scene.Name);
   }
 
   #endregion
 
   #region Methods
 
+  private List<TrackedScene> CreateChildren()
+  {
+    return this.Scene.Children
+      .Select(s => new TrackedScene(s, this.dataTrackingTimer, this.loggerFactory))
+      .ToList();
+  }
+
   private void HandleChildScenesChanged(object? sender, TrackingCollectionChangedEventArgs args)
   {
+    if (!this.lazyChildren.IsValueCreated)
+      return;
+
     if (args.Item is Scene scene)
     {
       this.childrenLock.EnterWriteLock();
       try
       {
+        var children = this.lazyChildren.Value;
         if (args.Action == NotifyCollectionChangedAction.Add)
-          this.children.Add(new TrackedScene(scene, this.dataTrackingTimer));
+          children.Add(new TrackedScene(scene, this.dataTrackingTimer, this.loggerFactory));
 
-        if (args.Action != NotifyCollectionChangedAction.Remove)
+        if (args.Action == NotifyCollectionChangedAction.Remove)
         {
-          var removedScene = this.children.First(s => s.Scene == scene);
-          this.children.Remove(removedScene);
+          var removedScene = children.First(s => s.Scene == scene);
+          children.Remove(removedScene);
           removedScene.Dispose();
         }
 
@@ -76,20 +94,31 @@ internal sealed class TrackedScene : ITrackedScene
     }
   }
 
+  private List<TrackedEntity> CreateEntities()
+  {
+    return this.Scene.Entities
+      .Select(e => new TrackedEntity(e, this.dataTrackingTimer, this.loggerFactory))
+      .ToList();
+  }
+
   private void HandleEntitiesChanged(object? sender, TrackingCollectionChangedEventArgs args)
   {
+    if (!this.lazyEntities.IsValueCreated)
+      return;
+
     if (args.Item is Entity entity)
     {
       this.entitiesLock.EnterWriteLock();
       try
       {
+        var entities = this.lazyEntities.Value;
         if (args.Action == NotifyCollectionChangedAction.Add)
-          this.entities.Add(new TrackedEntity(entity, this.dataTrackingTimer));
+          entities.Add(new TrackedEntity(entity, this.dataTrackingTimer, this.loggerFactory));
 
-        if (args.Action != NotifyCollectionChangedAction.Remove)
+        if (args.Action == NotifyCollectionChangedAction.Remove)
         {
-          var removedEntity = this.entities.First(e => e.Entity == entity);
-          this.entities.Remove(removedEntity);
+          var removedEntity = entities.First(e => e.Entity == entity);
+          entities.Remove(removedEntity);
           removedEntity.Dispose();
         }
 
@@ -110,21 +139,30 @@ internal sealed class TrackedScene : ITrackedScene
 
   public string Name => this.Scene.Name;
 
-  public IReadOnlyCollection<ITrackedScene> Children => this.children;
+  public IReadOnlyCollection<ITrackedScene> Children => this.lazyChildren.Value;
 
-  public IReadOnlyCollection<ITrackedEntity> Entities => this.entities;
+  public IReadOnlyCollection<ITrackedEntity> Entities => this.lazyEntities.Value;
 
   public event PropertyChangedEventHandler? PropertyChanged;
 
   public void Dispose()
   {
+    this.logger.LogTrace("Dispose {id} for {name}", this.Id, this.Scene.Name);
+
     this.Scene.Children.CollectionChanged -= this.HandleChildScenesChanged;
     this.Scene.Entities.CollectionChanged -= this.HandleEntitiesChanged;
 
-    foreach (var child in this.children)
-      child.Dispose();
-    foreach (var entity in this.entities)
-      entity.Dispose();
+    if (this.lazyChildren.IsValueCreated)
+    {
+      foreach (var child in this.lazyChildren.Value)
+        child.Dispose();
+    }
+
+    if (this.lazyEntities.IsValueCreated)
+    {
+      foreach (var entity in this.lazyEntities.Value)
+        entity.Dispose();
+    }
   }
 
   #endregion
