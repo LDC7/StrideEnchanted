@@ -23,7 +23,6 @@ internal sealed class WebHostAdapter : IHostedService, IDisposable
   public WebHostAdapter(IWebHost webHost)
   {
     this.webHost = webHost;
-
     this.logger = this.webHost.Services.GetRequiredService<ILogger<IHostedService>>();
   }
 

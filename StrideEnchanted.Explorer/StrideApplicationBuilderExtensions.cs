@@ -89,15 +89,16 @@ public static class StrideApplicationBuilderExtensions
       webHostBuilder.Configure(static app =>
       {
         app.UseExceptionHandler("/Error");
-        app.UseStaticFiles();
         app.UseRouting();
         app.UseAntiforgery();
 
         app.UseEndpoints(endpoints =>
         {
+          endpoints.MapStaticAssets();
           endpoints
             .MapRazorComponents<AppView>()
-            .AddInteractiveServerRenderMode();
+            .AddInteractiveServerRenderMode()
+            .WithStaticAssets();
         });
       });
 

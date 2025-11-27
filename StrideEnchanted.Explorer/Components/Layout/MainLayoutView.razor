@@ -11,7 +11,7 @@
 <MudSnackbarProvider />
 <MudLayout>
   <MudAppBar Elevation="1" Fixed="@true">
-    <MudText Typo="@Typo.h5" Class="ml-3">@this.Game.Window.Title</MudText>
+    <MudText Typo="@Typo.h5" Class="ml-3">@this.Game.Window?.Title</MudText>
     <MudSpacer />
     <NavMenuView />
     <MudSpacer />

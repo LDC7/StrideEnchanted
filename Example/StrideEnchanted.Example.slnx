@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="StrideEnchanted.Example/StrideEnchanted.Example.csproj" />
+  <Project Path="StrideEnchanted.Example.Windows/StrideEnchanted.Example.Windows.csproj" />
+</Solution>
