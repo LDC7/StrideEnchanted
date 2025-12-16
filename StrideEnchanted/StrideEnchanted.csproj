@@ -29,8 +29,8 @@
 
   <ItemGroup Condition="'$(UsePackageReferences)' == 'true'">
     <None Include="../README.md" Pack="true" PackagePath="" />
-    <PackageReference Include="StrideEnchanted.Explorer" Version="4.3.02507.0" />
-    <PackageReference Include="StrideEnchanted.Host" Version="4.3.02507.0" />
+    <PackageReference Include="StrideEnchanted.Explorer" />
+    <PackageReference Include="StrideEnchanted.Host" />
   </ItemGroup>
 
 </Project>

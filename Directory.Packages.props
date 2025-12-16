@@ -1,0 +1,21 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <StrideVersion>4.3.0.2507</StrideVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="DeterministicGuids" Version="1.0.6" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
+    <PackageVersion Include="MudBlazor" Version="8.15.0" />
+    <PackageVersion Include="Stride.Core.Assets.CompilerApp" Version="$(StrideVersion)" />
+    <PackageVersion Include="Stride.Engine" Version="$(StrideVersion)" />
+    <PackageVersion Include="Stride.Navigation" Version="$(StrideVersion)" />
+    <PackageVersion Include="Stride.Particles" Version="$(StrideVersion)" />
+    <PackageVersion Include="Stride.Physics" Version="$(StrideVersion)" />
+    <PackageVersion Include="Stride.UI" Version="$(StrideVersion)" />
+    <PackageVersion Include="Stride.Video" Version="$(StrideVersion)" />
+    <PackageVersion Include="StrideEnchanted.Explorer" Version="4.3.02507.0" />
+    <PackageVersion Include="StrideEnchanted.Host" Version="4.3.02507.0" />
+    <PackageVersion Include="UUIDNext" Version="4.2.2" />
+  </ItemGroup>
+</Project>
