@@ -14,7 +14,7 @@
     <PackageVersion Include="Stride.Physics" Version="$(StrideVersion)" />
     <PackageVersion Include="Stride.UI" Version="$(StrideVersion)" />
     <PackageVersion Include="Stride.Video" Version="$(StrideVersion)" />
-    <PackageVersion Include="StrideEnchanted.Explorer" Version="4.3.02507.0" />
+    <PackageVersion Include="StrideEnchanted.Explorer" Version="4.3.02507.1" />
     <PackageVersion Include="StrideEnchanted.Host" Version="4.3.02507.0" />
   </ItemGroup>
 </Project>
