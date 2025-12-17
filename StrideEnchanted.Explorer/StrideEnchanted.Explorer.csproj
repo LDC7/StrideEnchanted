@@ -34,6 +34,13 @@
 
   <ItemGroup Condition="'$(UsePackageReferences)' == 'true'">
     <None Include="README.md" Pack="true" PackagePath="" />
+    <!-- endpoints/runtime static web assets -->
+    <None Include="$(TargetDir)$(AssemblyName).staticwebassets*.json"
+          Pack="true"
+          PackagePath="lib\$(TargetFramework)\" />
+    <None Include="StrideEnchanted.Explorer.targets"
+          Pack="true"
+          PackagePath="buildTransitive\" />
     <PackageReference Include="StrideEnchanted.Host" />
   </ItemGroup>
 
