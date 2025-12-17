@@ -4,7 +4,7 @@
     <StrideVersion>4.3.0.2507</StrideVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="DeterministicGuids" Version="1.0.6" />
+    <PackageVersion Include="DeterministicGuids" Version="1.0.7" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
     <PackageVersion Include="MudBlazor" Version="8.15.0" />
     <PackageVersion Include="Stride.Core.Assets.CompilerApp" Version="$(StrideVersion)" />
