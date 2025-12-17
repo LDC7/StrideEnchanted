@@ -56,7 +56,7 @@ internal sealed class TrackedEntityComponentParameter : ITrackedEntityComponentP
     this.MemberInfo = memberInfo;
     this.dataTrackingTimer = dataTrackingTimer;
     this.ParameterType = parameterType;
-    this.Id = UUIDNext.Uuid.NewNameBased(this.component.Id, this.Name);
+    this.Id = DeterministicGuids.DeterministicGuid.Create(this.component.Id, this.Name);
 
     this.cachedValue = this.component.GetValue(this);
     this.dataTrackingTimer.Subscribe(this.Invalidate);

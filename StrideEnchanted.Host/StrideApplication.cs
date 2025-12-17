@@ -12,7 +12,7 @@ public sealed class StrideApplication : IDisposable, IAsyncDisposable
 {
   #region Fields and Properties
 
-  private readonly object locker = new();
+  private readonly Lock locker = new();
   private readonly IHost host;
   private readonly GameBase game;
 

@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MudBlazor" Version="8.15.0" />
-    <PackageReference Include="UUIDNext" Version="4.2.2" />
+    <PackageReference Include="DeterministicGuids" />
+    <PackageReference Include="MudBlazor" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UsePackageReferences)' != 'true'">
@@ -34,7 +34,7 @@
 
   <ItemGroup Condition="'$(UsePackageReferences)' == 'true'">
     <None Include="README.md" Pack="true" PackagePath="" />
-    <PackageReference Include="StrideEnchanted.Host" Version="4.3.02507.0" />
+    <PackageReference Include="StrideEnchanted.Host" />
   </ItemGroup>
 
 </Project>

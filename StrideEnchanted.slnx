@@ -1,14 +1,15 @@
-﻿<Solution>
+<Solution>
   <Folder Name="/Solution Items/">
     <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
     <File Path="README.md" />
   </Folder>
   <Folder Name="/Example/">
     <File Path="Example/README.md" />
-    <Project Path="Example/StrideEnchanted.Example/StrideEnchanted.Example.csproj" />
     <Project Path="Example/StrideEnchanted.Example.Windows/StrideEnchanted.Example.Windows.csproj" />
+    <Project Path="Example/StrideEnchanted.Example/StrideEnchanted.Example.csproj" />
   </Folder>
-  <Project Path="StrideEnchanted/StrideEnchanted.csproj" />
   <Project Path="StrideEnchanted.Explorer/StrideEnchanted.Explorer.csproj" />
   <Project Path="StrideEnchanted.Host/StrideEnchanted.Host.csproj" />
+  <Project Path="StrideEnchanted/StrideEnchanted.csproj" />
 </Solution>
