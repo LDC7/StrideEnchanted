@@ -18,6 +18,9 @@ internal sealed class StrideLogger : Microsoft.Extensions.Logging.ILogger
 
   public StrideLogger(string categoryName, IExternalScopeProvider scopeProvider)
   {
+    ArgumentNullException.ThrowIfNull(categoryName);
+    ArgumentNullException.ThrowIfNull(scopeProvider);
+
     this.strideLogger = GlobalLogger.GetLogger(categoryName, LogMessageType.Debug);
     this.scopeProvider = scopeProvider;
   }
@@ -47,18 +50,30 @@ internal sealed class StrideLogger : Microsoft.Extensions.Logging.ILogger
     if (!this.IsEnabled(logLevel))
       return;
 
+    ArgumentNullException.ThrowIfNull(formatter);
+
+    var message = this.BuildMessage(state, exception, formatter);
+    this.Write(logLevel, message);
+  }
+
+  #endregion
+
+  #region Methods
+
+  private string BuildMessage<TState>(TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+  {
     var message = formatter(state, exception);
     if (exception != null)
-      message += $"\n{exception}";
+      message = $"{message}{Environment.NewLine}{exception}";
 
     var scopeBuilder = new ScopeBuilder(message);
-    this.scopeProvider.ForEachScope((scope, sb) =>
-    {
-      sb.Append($"[{scope}] ");
-    }, scopeBuilder);
+    this.scopeProvider.ForEachScope(static (scope, sb) => sb.Append($"[{scope}] "), scopeBuilder);
 
-    message = scopeBuilder.ToString();
+    return scopeBuilder.ToString();
+  }
 
+  private void Write(LogLevel logLevel, string message)
+  {
     switch (logLevel)
     {
       case LogLevel.Critical:
@@ -89,7 +104,7 @@ internal sealed class StrideLogger : Microsoft.Extensions.Logging.ILogger
 
   #region Nested
 
-  private class ScopeBuilder
+  private sealed class ScopeBuilder
   {
     private readonly StringBuilder stringBuilder = new();
     private readonly string baseMessage;

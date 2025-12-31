@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
@@ -26,7 +27,7 @@ internal sealed class StrideApplicationBuilder<TGame> : IStrideApplicationBuilde
   #region Fields and Properties
 
   private readonly HostApplicationBuilder hostApplicationBuilder;
-  private bool isHostBuilded = false;
+  private int buildWasCalled;
 
   #endregion
 
@@ -34,6 +35,8 @@ internal sealed class StrideApplicationBuilder<TGame> : IStrideApplicationBuilde
 
   internal StrideApplicationBuilder(HostApplicationBuilderSettings settings)
   {
+    ArgumentNullException.ThrowIfNull(settings);
+
     this.hostApplicationBuilder = Microsoft.Extensions.Hosting.Host.CreateEmptyApplicationBuilder(settings);
     this.Initialize();
   }
@@ -44,22 +47,37 @@ internal sealed class StrideApplicationBuilder<TGame> : IStrideApplicationBuilde
 
   private void Initialize()
   {
+    this.ConfigureConfiguration();
+    this.ConfigureLogging();
+    this.RegisterGameServices();
+  }
+
+  private void ConfigureConfiguration()
+  {
     this.hostApplicationBuilder.Configuration
       .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
       .AddJsonFile($"appsettings.{this.hostApplicationBuilder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
       .AddEnvironmentVariables();
+  }
 
+  private void ConfigureLogging()
+  {
     this.hostApplicationBuilder.Logging
       .ClearProviders()
       .AddProvider(new StrideLoggerProvider());
+  }
 
-    _ = this.hostApplicationBuilder.Services
+  private void RegisterGameServices()
+  {
+    var services = this.hostApplicationBuilder.Services;
+
+    _ = services
       .AddSingleton(this.hostApplicationBuilder.Services)
       .AddSingleton<TGame>()
       .AddSingleton<IGame>(static p => p.GetRequiredService<TGame>())
       .AddSingleton<GameBase>(static p => p.GetRequiredService<TGame>());
 
-    this.hostApplicationBuilder.Services
+    _ = services
       // Game
       .AddGameService<ScriptSystem>()
       .AddGameService<SceneSystem>()
@@ -104,9 +122,8 @@ internal sealed class StrideApplicationBuilder<TGame> : IStrideApplicationBuilde
 
   public StrideApplication Build()
   {
-    if (this.isHostBuilded)
-      throw new InvalidOperationException("Host already builded.");
-    this.isHostBuilded = true;
+    if (Interlocked.Exchange(ref this.buildWasCalled, 1) != 0)
+      throw new InvalidOperationException("Host has already been built.");
 
     var host = this.hostApplicationBuilder.Build();
     var game = host.Services.GetRequiredService<GameBase>();

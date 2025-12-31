@@ -12,12 +12,12 @@ public sealed class StrideApplication : IDisposable, IAsyncDisposable
 {
   #region Fields and Properties
 
-  private readonly Lock locker = new();
+  private readonly SemaphoreSlim stopSemaphore = new(1, 1);
   private readonly IHost host;
   private readonly GameBase game;
 
   private GameContext? gameContext;
-  private Task? hostStopingTask;
+  private Task? hostStoppingTask;
 
   public IServiceProvider Services => this.host.Services;
 
@@ -56,30 +56,44 @@ public sealed class StrideApplication : IDisposable, IAsyncDisposable
   public async Task RunAsync(CancellationToken cancellationToken = default)
   {
     await this.host.StartAsync(cancellationToken).ConfigureAwait(false);
-    await this.RunGame(cancellationToken).ConfigureAwait(false);
-
-    _ = this.StopHost(CancellationToken.None).ConfigureAwait(false);
+    try
+    {
+      await this.RunGame(cancellationToken).ConfigureAwait(false);
+    }
+    finally
+    {
+      await this.StopHostAsync(CancellationToken.None).ConfigureAwait(false);
+    }
   }
 
   private Task RunGame(CancellationToken cancellationToken)
   {
     var gameContext = this.gameContext ?? this.host.Services.GetService<GameContext>();
 
-    // СancellationToken does not work here(
+    // CancellationToken does not propagate into Stride's game loop; it only gates task creation.
     return Task.Run(() => this.game.Run(gameContext), cancellationToken);
   }
 
-  private Task StopHost(CancellationToken cancellationToken)
+  private async Task StopHostAsync(CancellationToken cancellationToken)
   {
-    if (this.hostStopingTask == null)
+    var existingTask = this.hostStoppingTask;
+    if (existingTask != null)
     {
-      lock (this.locker)
-      {
-        this.hostStopingTask ??= this.host.StopAsync(cancellationToken);
-      }
+      await existingTask.ConfigureAwait(false);
+      return;
     }
 
-    return this.hostStopingTask;
+    await this.stopSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+    try
+    {
+      this.hostStoppingTask ??= this.host.StopAsync(cancellationToken);
+    }
+    finally
+    {
+      this.stopSemaphore.Release();
+    }
+
+    await this.hostStoppingTask.ConfigureAwait(false);
   }
 
   #endregion
@@ -95,9 +109,10 @@ public sealed class StrideApplication : IDisposable, IAsyncDisposable
 
   #region IAsyncDisposable
 
-  public ValueTask DisposeAsync()
+  public async ValueTask DisposeAsync()
   {
-    return ((IAsyncDisposable)this.host).DisposeAsync();
+    await this.StopHostAsync(CancellationToken.None).ConfigureAwait(false);
+    await ((IAsyncDisposable)this.host).DisposeAsync().ConfigureAwait(false);
   }
 
   #endregion
