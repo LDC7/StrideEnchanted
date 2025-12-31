@@ -1,4 +1,4 @@
-﻿namespace StrideEnchanted.Explorer.Constants;
+namespace StrideEnchanted.Explorer.Constants;
 
 internal static class ExplorerIcons
 {

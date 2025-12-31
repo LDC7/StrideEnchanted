@@ -2,4 +2,4 @@
 
 This is a example project showing how to use StrideEnchanted
 
-It’s not a game — just a sandbox for testing and debugging.
+Itâ€™s not a game â€” just a sandbox for testing and debugging.

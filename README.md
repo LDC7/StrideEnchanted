@@ -1,4 +1,4 @@
-﻿# StrideEnchanted
+# StrideEnchanted
 
 > This is a work-in-progress.
 
