@@ -4,6 +4,7 @@ using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -43,7 +44,7 @@ public static class StrideApplicationBuilderExtensions
       services.PostConfigure(configureOptions);
   }
 
-  private static IHostedService BuildExplorerHost(
+  private static WebServerHostAdapter BuildExplorerHost(
     IServiceProvider provider,
     Action<StrideExplorerOptions>? configureOptions)
   {
@@ -51,19 +52,31 @@ public static class StrideApplicationBuilderExtensions
     var configuration = provider.GetRequiredService<IConfiguration>();
     var loggerProviders = provider.GetServices<ILoggerProvider>();
 
-    var webHostBuilder = new WebHostBuilder()
-      .UseContentRoot(environment.ContentRootPath)
+    var webApplicationBuilder = WebApplication.CreateBuilder(new WebApplicationOptions
+    {
+      ApplicationName = typeof(StrideApplicationBuilderExtensions).Assembly.GetName().Name!,
+      EnvironmentName = environment.EnvironmentName,
+      ContentRootPath = environment.ContentRootPath
+    });
+
+    webApplicationBuilder.Configuration.Sources.Clear();
+    webApplicationBuilder.Configuration.AddConfiguration(configuration);
+    StaticWebAssetsLoader.UseStaticWebAssets(webApplicationBuilder.Environment, webApplicationBuilder.Configuration);
+
+    webApplicationBuilder.WebHost
       .UseStaticWebAssets()
-      .ConfigureAppConfiguration(config => config.AddConfiguration(configuration))
-      .ConfigureLogging(logging => ConfigureLogging(logging, configuration, loggerProviders))
-      .ConfigureServices(services => ConfigureServices(services, provider, configuration, configureOptions))
-      .UseKestrel(ConfigureKestrel)
-      .Configure(ConfigurePipeline);
+      .UseKestrel(ConfigureKestrel);
 
-    var webHost = webHostBuilder.Build();
-    WarnIfProduction(environment, webHost.Services.GetRequiredService<ILogger<IStrideApplicationBuilder>>());
+    ConfigureLogging(webApplicationBuilder.Logging, configuration, loggerProviders);
+    ConfigureServices(webApplicationBuilder.Services, provider, webApplicationBuilder.Configuration, configureOptions);
 
-    return new WebHostAdapter(webHost);
+    var webApplication = webApplicationBuilder.Build();
+    ConfigurePipeline(webApplication);
+
+    var logger = webApplication.Services.GetRequiredService<ILogger<IStrideApplicationBuilder>>();
+    WarnIfProduction(environment, logger);
+
+    return new WebServerHostAdapter(webApplication);
   }
 
   private static void ConfigureLogging(

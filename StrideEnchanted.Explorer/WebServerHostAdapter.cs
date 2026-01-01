@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,22 +9,22 @@ using Microsoft.Extensions.Logging;
 
 namespace StrideEnchanted.Explorer;
 
-internal sealed class WebHostAdapter : IHostedService, IDisposable
+internal sealed class WebServerHostAdapter : IHostedService, IDisposable
 {
   #region Fields and Properties
 
-  private readonly IWebHost webHost;
-  private readonly ILogger<WebHostAdapter> logger;
+  private readonly IHost host;
+  private readonly ILogger<WebServerHostAdapter> logger;
   private bool disposed;
 
   #endregion
 
   #region Constructor
 
-  public WebHostAdapter(IWebHost webHost)
+  public WebServerHostAdapter(IHost host)
   {
-    this.webHost = webHost ?? throw new ArgumentNullException(nameof(webHost));
-    this.logger = this.webHost.Services.GetRequiredService<ILogger<WebHostAdapter>>();
+    this.host = host ?? throw new ArgumentNullException(nameof(host));
+    this.logger = this.host.Services.GetRequiredService<ILogger<WebServerHostAdapter>>();
   }
 
   #endregion
@@ -35,9 +35,10 @@ internal sealed class WebHostAdapter : IHostedService, IDisposable
   {
     ObjectDisposedException.ThrowIf(this.disposed, this);
 
-    await this.webHost.StartAsync(cancellationToken);
+    await this.host.StartAsync(cancellationToken);
 
-    var addresses = this.webHost.ServerFeatures.Get<IServerAddressesFeature>();
+    var server = this.host.Services.GetService<IServer>();
+    var addresses = server?.Features.Get<IServerAddressesFeature>();
     if (addresses?.Addresses != null)
     {
       foreach (var address in addresses.Addresses)
@@ -47,9 +48,17 @@ internal sealed class WebHostAdapter : IHostedService, IDisposable
 
   public async Task StopAsync(CancellationToken cancellationToken)
   {
-    ObjectDisposedException.ThrowIf(this.disposed, this);
+    if (this.disposed)
+      return;
 
-    await this.webHost.StopAsync(cancellationToken);
+    try
+    {
+      await this.host.StopAsync(cancellationToken);
+    }
+    finally
+    {
+      this.Dispose();
+    }
   }
 
   #endregion
@@ -62,7 +71,7 @@ internal sealed class WebHostAdapter : IHostedService, IDisposable
       return;
 
     this.disposed = true;
-    this.webHost.Dispose();
+    this.host.Dispose();
   }
 
   #endregion
