@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Stride.Engine;
 using Stride.Games;
 
@@ -15,6 +16,8 @@ public sealed class StrideApplication : IDisposable, IAsyncDisposable
   private readonly SemaphoreSlim stopSemaphore = new(1, 1);
   private readonly IHost host;
   private readonly GameBase game;
+  private readonly ILogger<StrideApplication> logger;
+  private bool disposed;
 
   private GameContext? gameContext;
   private Task? hostStoppingTask;
@@ -29,6 +32,7 @@ public sealed class StrideApplication : IDisposable, IAsyncDisposable
   {
     this.host = host;
     this.game = game;
+    this.logger = this.host.Services.GetRequiredService<ILogger<StrideApplication>>();
   }
 
   #endregion
@@ -111,7 +115,25 @@ public sealed class StrideApplication : IDisposable, IAsyncDisposable
 
   public async ValueTask DisposeAsync()
   {
+    if (this.disposed)
+      return;
+
+    this.disposed = true;
+
     await this.StopHostAsync(CancellationToken.None).ConfigureAwait(false);
+
+    var disposeTask = Task.Run(this.game.Dispose);
+    var completedTask = await Task.WhenAny(disposeTask, Task.Delay(TimeSpan.FromSeconds(5)));
+    
+    if (completedTask == disposeTask)
+    {
+      await disposeTask.ConfigureAwait(false);
+    }
+    else
+    {
+      this.logger.LogWarning("Game dispose is taking longer than 5 seconds; continuing shutdown.");
+    }
+
     await ((IAsyncDisposable)this.host).DisposeAsync().ConfigureAwait(false);
   }
 
