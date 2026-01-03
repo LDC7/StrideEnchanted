@@ -9,6 +9,16 @@ trim_trailing_whitespace = true
 end_of_line = lf
 insert_final_newline = true
 
+[*.{razor,cshtml}]
+
+csharp_new_line_before_open_brace = all
+csharp_indent_block_contents = true
+csharp_indent_braces = false
+csharp_indent_case_contents = true
+csharp_indent_case_contents_when_block = true
+csharp_space_around_binary_operators = before_and_after
+csharp_space_between_parentheses = false
+
 [*.cs]
 
 csharp_new_line_before_open_brace = all
