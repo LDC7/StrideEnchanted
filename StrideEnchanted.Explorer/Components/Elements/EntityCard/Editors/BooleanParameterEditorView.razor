@@ -1,21 +1,23 @@
-@using Microsoft.AspNetCore.Components.Web
+@using System
 @using MudBlazor
 @using StrideEnchanted.Explorer.Interfaces
 @using System.ComponentModel
 
 @implements IDisposable
 
-<MudSwitch T="bool"
-           @ref="@this.editorRef"
-           Label="@this.Parameter.Name"
-           Value="@this.internalValue"
-           Class="my-1"
-           Color="@Color.Primary"
-           ValueChanged="@this.HandleValueChanged" />
+<MudCheckBox T="bool?"
+             @ref="@this.editorRef"
+             Label="@this.Parameter.Name"
+             Value="@this.internalValue"
+             Class="my-1"
+             Color="@Color.Primary"
+             TriState="@this.isNullable"
+             ValueChanged="@this.HandleValueChanged" />
 
 @code {
-  private MudSwitch<bool> editorRef = default!;
-  private bool internalValue = default;
+  private MudCheckBox<bool?> editorRef = default!;
+  private bool? internalValue = default;
+  private bool isNullable = false;
 
   [Parameter]
   [EditorRequired]
@@ -23,21 +25,22 @@
 
   protected override Task OnInitializedAsync()
   {
-    this.internalValue = (bool)this.Parameter.Value!;
+    this.isNullable = Nullable.GetUnderlyingType(this.Parameter.ParameterType) != null;
+    this.internalValue = this.Parameter.Value as bool?;
     this.Parameter.PropertyChanged += this.OnPropertyChanged;
     return base.OnInitializedAsync();
   }
 
-  private void HandleValueChanged(bool newValue)
+  private void HandleValueChanged(bool? newValue)
   {
     this.internalValue = newValue;
-    this.Parameter.SetValue(this.internalValue);
+    this.Parameter.SetValue(this.isNullable ? this.internalValue : (this.internalValue ?? false));
   }
 
   private void OnPropertyChanged(object? sender, PropertyChangedEventArgs _)
   {
-    this.internalValue = (bool)this.Parameter.Value!;
-    InvokeAsync(this.StateHasChanged);
+    this.internalValue = this.Parameter.Value as bool?;
+    this.InvokeAsync(this.StateHasChanged);
   }
 
   public void Dispose()

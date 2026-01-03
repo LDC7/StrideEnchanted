@@ -1,3 +1,4 @@
+@using System
 @using Microsoft.AspNetCore.Components.Web
 @using MudBlazor
 @using Stride.Core.Mathematics
@@ -8,6 +9,15 @@
 @implements IDisposable
 
 <MudStack Row="@true">
+  
+  @if (this.isNullable)
+  {
+    <MudSwitch T="bool"
+               Class="my-1"
+               Color="@MudBlazor.Color.Primary"
+               Value="@this.hasValue"
+               ValueChanged="@this.HandleHasValueChanged" />
+  }
 
   <MudNumericField T="@float"
                    @ref="@this.editorXRef"
@@ -15,6 +25,7 @@
                    Value="@this.X"
                    Class="my-1"
                    HideSpinButtons="@true"
+                   Disabled="@(!this.hasValue)"
                    ValueChanged="@this.HandleValueXChanged"
                    OnKeyDown="@this.HandleKeyDown"
                    OnBlur="@this.HandleBlur" />
@@ -25,12 +36,14 @@
                    Value="@this.Y"
                    Class="my-1"
                    HideSpinButtons="@true"
+                   Disabled="@(!this.hasValue)"
                    ValueChanged="@this.HandleValueYChanged"
                    OnKeyDown="@this.HandleKeyDown"
                    OnBlur="@this.HandleBlur" />
 
   <MudToggleIconButton @bind-Toggled="@this.IsNormalized"
                        Icon="@ExplorerIcons.NormalizedVector"
+                       Disabled="@(!this.hasValue)"
                        Color="@MudBlazor.Color.Default"
                        ToggledColor="@MudBlazor.Color.Primary" />
 
@@ -42,6 +55,8 @@
   private float X = default;
   private float Y = default;
   private bool isEditing = false;
+  private bool hasValue = true;
+  private bool isNullable = false;
 
   public bool IsNormalized { get; set; }
 
@@ -51,10 +66,19 @@
 
   protected override Task OnInitializedAsync()
   {
-    var vector = (Vector2)this.Parameter.Value!;
-    this.IsNormalized = vector.IsNormalized;
-    this.X = vector.X;
-    this.Y = vector.Y;
+    this.isNullable = Nullable.GetUnderlyingType(this.Parameter.ParameterType) != null;
+    if (this.Parameter.Value is Vector2 vector)
+    {
+      this.IsNormalized = vector.IsNormalized;
+      this.X = vector.X;
+      this.Y = vector.Y;
+    }
+    else
+    {
+      this.hasValue = false;
+      this.ResetVector();
+    }
+
     this.Parameter.PropertyChanged += this.OnPropertyChanged;
     return base.OnInitializedAsync();
   }
@@ -89,10 +113,34 @@
     return Task.CompletedTask;
   }
 
+  private void HandleHasValueChanged(bool newValue)
+  {
+    if (!this.isNullable)
+      return;
+
+    if (this.hasValue == newValue)
+      return;
+
+    this.hasValue = newValue;
+    this.isEditing = false;
+
+    this.ApplyInternalValue();
+  }
+
   private void ApplyInternalValue()
   {
-    var vector = new Vector2(this.X, this.Y);
     this.isEditing = false;
+
+    if (!this.hasValue)
+    {
+      this.Parameter.SetValue(null);
+      return;
+    }
+
+    var vector = new Vector2(this.X, this.Y);
+    if (this.IsNormalized)
+      vector.Normalize();
+      
     this.Parameter.SetValue(vector);
   }
 
@@ -106,14 +154,30 @@
   {
     if (!this.isEditing)
     {
-      var vector = (Vector2)this.Parameter.Value!;
-      if (this.IsNormalized)
-        vector.Normalize();
+      if (this.Parameter.Value is Vector2 vector)
+      {
+        if (this.IsNormalized)
+          vector.Normalize();
 
-      this.X = vector.X;
-      this.Y = vector.Y;
-      InvokeAsync(this.StateHasChanged);
+        this.hasValue = true;
+        this.X = vector.X;
+        this.Y = vector.Y;
+      }
+      else if (this.isNullable)
+      {
+        this.hasValue = false;
+        this.ResetVector();
+      }
+
+      this.InvokeAsync(this.StateHasChanged);
     }
+  }
+
+  private void ResetVector()
+  {
+    this.IsNormalized = false;
+    this.X = default;
+    this.Y = default;
   }
 
   public void Dispose()

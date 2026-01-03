@@ -23,7 +23,7 @@
 
   private void OnPropertyChanged(object? sender, PropertyChangedEventArgs _)
   {
-    InvokeAsync(this.StateHasChanged);
+    this.InvokeAsync(this.StateHasChanged);
   }
 
   public void Dispose()

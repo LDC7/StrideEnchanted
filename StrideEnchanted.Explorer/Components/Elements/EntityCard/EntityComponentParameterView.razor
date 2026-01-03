@@ -1,3 +1,4 @@
+@using System
 @using MudBlazor
 @using Stride.Core.Mathematics
 @using StrideEnchanted.Explorer.Components.Elements.EntityCard.Editors
@@ -18,22 +19,22 @@
     }
   case ParameterType.Integer:
     {
-      <NumberParameterEditorView T="@(int?)" Parameter="@this.Parameter" />
+      <NumberParameterEditorView T="@(int)" Parameter="@this.Parameter" />
       break;
     }
   case ParameterType.Float:
     {
-      <NumberParameterEditorView T="@(float?)" Parameter="@this.Parameter" />
+      <NumberParameterEditorView T="@(float)" Parameter="@this.Parameter" />
       break;
     }
   case ParameterType.Double:
     {
-      <NumberParameterEditorView T="@(double?)" Parameter="@this.Parameter" />
+      <NumberParameterEditorView T="@(double)" Parameter="@this.Parameter" />
       break;
     }
   case ParameterType.Decimal:
     {
-      <NumberParameterEditorView T="@(decimal?)" Parameter="@this.Parameter" />
+      <NumberParameterEditorView T="@(decimal)" Parameter="@this.Parameter" />
       break;
     }
   case ParameterType.Vector2:
@@ -79,7 +80,9 @@
 
   private static ParameterType GetParameterType(ITrackedEntityComponentParameter parameter)
   {
-    return parameter.ParameterType switch
+    var parameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
+
+    return parameterType switch
     {
       Type t when t == typeof(bool) => ParameterType.Boolean,
       Type t when t == typeof(int) => ParameterType.Integer,

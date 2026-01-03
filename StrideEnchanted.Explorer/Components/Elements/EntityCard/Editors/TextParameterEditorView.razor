@@ -67,7 +67,7 @@
     if (!this.isEditing)
     {
       this.internalValue = this.Parameter.Value as string;
-      InvokeAsync(this.StateHasChanged);
+      this.InvokeAsync(this.StateHasChanged);
     }
   }
 

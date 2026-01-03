@@ -1,3 +1,4 @@
+@using System
 @using Microsoft.AspNetCore.Components.Web
 @using MudBlazor
 @using Stride.Core.Mathematics
@@ -10,6 +11,15 @@
 @implements IDisposable
 
 <MudStack Row="@true">
+  
+  @if (this.isNullable)
+  {
+    <MudSwitch T="bool"
+               Class="my-1"
+               Color="@MudBlazor.Color.Primary"
+               Value="@this.hasValue"
+               ValueChanged="@this.HandleHasValueChanged" />
+  }
 
   <MudNumericField T="@float"
                    @ref="@this.editorXRef"
@@ -17,6 +27,7 @@
                    Value="@this.X"
                    Class="my-1"
                    HideSpinButtons="@true"
+                   Disabled="@(!this.hasValue)"
                    ValueChanged="@this.HandleValueXChanged"
                    OnKeyDown="@this.HandleKeyDown"
                    OnBlur="@this.HandleBlur" />
@@ -27,6 +38,7 @@
                    Value="@this.Y"
                    Class="my-1"
                    HideSpinButtons="@true"
+                   Disabled="@(!this.hasValue)"
                    ValueChanged="@this.HandleValueYChanged"
                    OnKeyDown="@this.HandleKeyDown"
                    OnBlur="@this.HandleBlur" />
@@ -37,6 +49,7 @@
                    Value="@this.Z"
                    Class="my-1"
                    HideSpinButtons="@true"
+                   Disabled="@(!this.hasValue)"
                    ValueChanged="@this.HandleValueZChanged"
                    OnKeyDown="@this.HandleKeyDown"
                    OnBlur="@this.HandleBlur" />
@@ -47,12 +60,14 @@
                    Value="@this.W"
                    Class="my-1"
                    HideSpinButtons="@true"
+                   Disabled="@(!this.hasValue)"
                    ValueChanged="@this.HandleValueWChanged"
                    OnKeyDown="@this.HandleKeyDown"
                    OnBlur="@this.HandleBlur" />
 
   <MudToggleIconButton @bind-Toggled="@this.IsNormalized"
                        Icon="@ExplorerIcons.NormalizedVector"
+                       Disabled="@(!this.hasValue)"
                        Color="@MudBlazor.Color.Default"
                        ToggledColor="@MudBlazor.Color.Primary" />
 
@@ -68,6 +83,8 @@
   private float Z = default;
   private float W = default;
   private bool isEditing = false;
+  private bool hasValue = true;
+  private bool isNullable = false;
 
   public bool IsNormalized { get; set; }
 
@@ -77,6 +94,8 @@
 
   protected override Task OnInitializedAsync()
   {
+    this.isNullable = Nullable.GetUnderlyingType(this.Parameter.ParameterType) != null;
+
     if (this.Parameter.Value is Vector4 vector)
     {
       this.IsNormalized = vector.IsNormalized;
@@ -92,6 +111,11 @@
       this.Y = quaternion.Y;
       this.Z = quaternion.Z;
       this.W = quaternion.W;
+    }
+    else
+    {
+      this.hasValue = false;
+      this.ResetVector();
     }
 
     this.Parameter.PropertyChanged += this.OnPropertyChanged;
@@ -146,8 +170,29 @@
     return Task.CompletedTask;
   }
 
+  private void HandleHasValueChanged(bool newValue)
+  {
+    if (!this.isNullable)
+      return;
+
+    if (this.hasValue == newValue)
+      return;
+
+    this.hasValue = newValue;
+    this.isEditing = false;
+
+    this.ApplyInternalValue();
+  }
+
   private void ApplyInternalValue()
   {
+    if (!this.hasValue)
+    {
+      this.isEditing = false;
+      this.Parameter.SetValue(null);
+      return;
+    }
+
     object? value = null;
     if (typeof(T) == typeof(Vector4))
     {
@@ -187,6 +232,7 @@
     {
       if (this.Parameter.Value is Vector4 vector)
       {
+        this.hasValue = true;
         this.X = vector.X;
         this.Y = vector.Y;
         this.Z = vector.Z;
@@ -194,14 +240,29 @@
       }
       else if (this.Parameter.Value is Quaternion quaternion)
       {
+        this.hasValue = true;
         this.X = quaternion.X;
         this.Y = quaternion.Y;
         this.Z = quaternion.Z;
         this.W = quaternion.W;
       }
+      else if (this.isNullable)
+      {
+        this.hasValue = false;
+        this.ResetVector();
+      }
 
-      InvokeAsync(this.StateHasChanged);
+      this.InvokeAsync(this.StateHasChanged);
     }
+  }
+
+  private void ResetVector()
+  {
+    this.IsNormalized = false;
+    this.X = default;
+    this.Y = default;
+    this.Z = default;
+    this.W = default;
   }
 
   public void Dispose()

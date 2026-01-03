@@ -1,25 +1,43 @@
+@using System
 @using Microsoft.AspNetCore.Components.Web
 @using MudBlazor
 @using StrideEnchanted.Explorer.Interfaces
 @using System.ComponentModel
+@using System.Numerics
 
-@typeparam T
+@typeparam T where T : struct, INumber<T>
 @implements IDisposable
 
-<MudNumericField T="@T"
-                 @ref="@this.editorRef"
-                 Label="@this.Parameter.Name"
-                 Value="@this.internalValue"
-                 Class="my-1"
-                 HideSpinButtons="@true"
-                 ValueChanged="@this.HandleValueChanged"
-                 OnKeyDown="@this.HandleKeyDown"
-                 OnBlur="@this.HandleBlur" />
+<MudStack Row="@true">
+
+  @if (this.isNullable)
+  {
+    <MudSwitch T="bool"
+               Class="my-1"
+               Color="@MudBlazor.Color.Primary"
+               Value="@this.hasValue"
+               ValueChanged="@this.HandleHasValueChanged" />
+  }
+
+  <MudNumericField T="@(T ?)"
+                   @ref="@this.editorRef"
+                   Label="@this.Parameter.Name"
+                   Value="@(this.hasValue ? this.internalValue : default)"
+                   Class="my-1"
+                   HideSpinButtons="@true"
+                   Disabled="@(!this.hasValue)"
+                   ValueChanged="@this.HandleValueChanged"
+                   OnKeyDown="@this.HandleKeyDown"
+                   OnBlur="@this.HandleBlur" />
+
+</MudStack>
 
 @code {
-  private MudNumericField<T> editorRef = default!;
-  private T? internalValue = default!;
+  private MudNumericField<T?> editorRef = default!;
+  private T? internalValue = default;
   private bool isEditing = false;
+  private bool hasValue = true;
+  private bool isNullable = false;
 
   [Parameter]
   [EditorRequired]
@@ -27,18 +45,40 @@
 
   protected override Task OnInitializedAsync()
   {
-    this.internalValue = this.Parameter.Value is null ? default : (T)this.Parameter.Value;
+    var parameterType = Nullable.GetUnderlyingType(this.Parameter.ParameterType);
+    this.isNullable = parameterType is not null;
+    parameterType ??= this.Parameter.ParameterType;
+    this.hasValue = !this.isNullable || this.Parameter.Value is not null;
+    this.internalValue = this.hasValue ? (T?)this.Parameter.Value : null;
+
     this.Parameter.PropertyChanged += this.OnPropertyChanged;
     return base.OnInitializedAsync();
   }
 
-  private void HandleValueChanged(T newValue)
+  private void HandleValueChanged(T? newValue)
   {
     if (!object.Equals(this.internalValue, newValue))
     {
       this.isEditing = true;
       this.internalValue = newValue;
+
+      if (this.isNullable)
+        this.hasValue = newValue is not null;
     }
+  }
+
+  private void HandleHasValueChanged(bool newValue)
+  {
+    if (!this.isNullable || this.hasValue == newValue)
+      return;
+
+    this.hasValue = newValue;
+    this.isEditing = false;
+
+    if (!this.hasValue)
+      this.internalValue = null;
+
+    this.ApplyInternalValue();
   }
 
   private async Task HandleKeyDown(KeyboardEventArgs args)
@@ -56,7 +96,14 @@
   private void ApplyInternalValue()
   {
     this.isEditing = false;
-    this.Parameter.SetValue(this.internalValue);
+
+    if (!this.hasValue)
+    {
+      this.Parameter.SetValue(null);
+      return;
+    }
+
+    this.Parameter.SetValue(this.isNullable ? this.internalValue : this.internalValue!.Value);
   }
 
   private async Task BlurAsync()
@@ -66,11 +113,13 @@
 
   private void OnPropertyChanged(object? sender, PropertyChangedEventArgs _)
   {
-    if (!this.isEditing)
-    {
-      this.internalValue = this.Parameter.Value is null ? default : (T)this.Parameter.Value;
-      InvokeAsync(this.StateHasChanged);
-    }
+    if (this.isEditing)
+      return;
+
+    this.hasValue = !this.isNullable || this.Parameter.Value is not null;
+    this.internalValue = this.hasValue ? (T?)this.Parameter.Value : null;
+
+    this.InvokeAsync(this.StateHasChanged);
   }
 
   public void Dispose()
