@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -100,6 +101,8 @@ public static class StrideApplicationBuilderExtensions
     Action<StrideExplorerOptions>? configureOptions)
   {
     ConfigureOptions(services, configuration, configureOptions);
+
+    services.TryAddSingleton(TimeProvider.System);
 
     var game = provider.GetRequiredService<IGame>();
     services

@@ -15,16 +15,22 @@ internal sealed class DataTrackingTimer : IDisposable
   private readonly ReaderWriterLockSlim locker = new();
   private readonly CancellationTokenSource cancellationTokenSource = new();
   private readonly IOptionsMonitor<StrideExplorerOptions> optionsMonitor;
+  private readonly TimeProvider timeProvider;
+  private readonly PeriodicTimer timer;
   private readonly Task timerLoopTask;
-  private readonly List<Func<ValueTask>> subscriptions = new();
+  private readonly List<Func<ValueTask>> subscriptions = [];
 
   #endregion
 
   #region Constructor
 
-  public DataTrackingTimer(IOptionsMonitor<StrideExplorerOptions> optionsMonitor)
+  public DataTrackingTimer(
+    IOptionsMonitor<StrideExplorerOptions> optionsMonitor,
+    TimeProvider timeProvider)
   {
     this.optionsMonitor = optionsMonitor;
+    this.timeProvider = timeProvider;
+    this.timer = new PeriodicTimer(this.optionsMonitor.CurrentValue.DataTrackingTimer, this.timeProvider);
     this.timerLoopTask = this.TimerLoop(this.cancellationTokenSource.Token);
   }
 
@@ -34,34 +40,36 @@ internal sealed class DataTrackingTimer : IDisposable
 
   private async Task TimerLoop(CancellationToken cancellationToken)
   {
-    while (true)
+    try
     {
-      if (cancellationToken.IsCancellationRequested)
-        break;
-
-      ImmutableArray<Func<ValueTask>> actions;
-      this.locker.EnterReadLock();
-      try
+      while (await this.timer.WaitForNextTickAsync(cancellationToken).ConfigureAwait(false))
       {
-        actions = this.subscriptions.ToImmutableArray();
+        await this.RunSubscribedActions(cancellationToken).ConfigureAwait(false);
       }
-      finally
-      {
-        this.locker.ExitReadLock();
-      }
+    }
+    catch (OperationCanceledException)
+    {
+      // graceful shutdown
+    }
+  }
 
-      foreach (var action in actions)
-      {
-        if (cancellationToken.IsCancellationRequested)
-          break;
+  public async Task RunSubscribedActions(CancellationToken cancellationToken)
+  {
+    ImmutableArray<Func<ValueTask>> actions;
+    this.locker.EnterReadLock();
+    try
+    {
+      actions = this.subscriptions.ToImmutableArray();
+    }
+    finally
+    {
+      this.locker.ExitReadLock();
+    }
 
-        _ = action.Invoke();
-      }
-
-      if (cancellationToken.IsCancellationRequested)
-        break;
-
-      await Task.Delay(this.optionsMonitor.CurrentValue.DataTrackingTimer, CancellationToken.None);
+    foreach (var action in actions)
+    {
+      cancellationToken.ThrowIfCancellationRequested();
+      await action().ConfigureAwait(false);
     }
   }
 
@@ -98,6 +106,20 @@ internal sealed class DataTrackingTimer : IDisposable
   public void Dispose()
   {
     this.cancellationTokenSource.Cancel();
+
+    try
+    {
+      this.timerLoopTask.GetAwaiter().GetResult();
+    }
+    catch (OperationCanceledException)
+    {
+      // ignore
+    }
+    finally
+    {
+      this.timer.Dispose();
+      this.cancellationTokenSource.Dispose();
+    }
   }
 
   #endregion
