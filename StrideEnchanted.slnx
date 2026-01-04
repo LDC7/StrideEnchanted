@@ -11,6 +11,10 @@
     <Project Path="Example/StrideEnchanted.Example.Windows/StrideEnchanted.Example.Windows.csproj" />
     <Project Path="Example/StrideEnchanted.Example/StrideEnchanted.Example.csproj" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/StrideEnchanted.Explorer.Tests/StrideEnchanted.Explorer.Tests.csproj" />
+    <Project Path="Tests/StrideEnchanted.Host.Tests/StrideEnchanted.Host.Tests.csproj" />
+  </Folder>
   <Project Path="StrideEnchanted.Explorer/StrideEnchanted.Explorer.csproj" />
   <Project Path="StrideEnchanted.Host/StrideEnchanted.Host.csproj" />
   <Project Path="StrideEnchanted/StrideEnchanted.csproj" />

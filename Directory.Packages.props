@@ -4,8 +4,11 @@
     <StrideVersion>4.3.0.2507</StrideVersion>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="DeterministicGuids" Version="1.0.7" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="MudBlazor" Version="8.15.0" />
     <PackageVersion Include="Stride.Core.Assets.CompilerApp" Version="$(StrideVersion)" />
     <PackageVersion Include="Stride.Engine" Version="$(StrideVersion)" />
@@ -16,5 +19,7 @@
     <PackageVersion Include="Stride.Video" Version="$(StrideVersion)" />
     <PackageVersion Include="StrideEnchanted.Explorer" Version="4.3.02507.1" />
     <PackageVersion Include="StrideEnchanted.Host" Version="4.3.02507.0" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>
 </Project>
