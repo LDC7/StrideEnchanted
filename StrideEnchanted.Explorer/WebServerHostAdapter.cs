@@ -6,10 +6,11 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using StrideEnchanted.Explorer.Interfaces;
 
 namespace StrideEnchanted.Explorer;
 
-internal sealed class WebServerHostAdapter : IHostedService, IDisposable
+internal sealed class WebServerHostAdapter : IExplorerHost, IDisposable
 {
   #region Fields and Properties
 

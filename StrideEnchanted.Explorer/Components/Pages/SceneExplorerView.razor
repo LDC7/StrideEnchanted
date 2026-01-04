@@ -5,17 +5,15 @@
 @using MudBlazor
 @using Stride.Core
 @using Stride.Engine
-@using Stride.Games
 @using StrideEnchanted.Explorer.Components.Elements
 @using System.Reflection
 @using StrideEnchanted.Explorer.Interfaces
-@using StrideEnchanted.Explorer.Services
 
-@inject IGame Game;
+@inject ISceneInstanceProvider SceneInstanceProvider;
 
 <PageTitle>Scene Explorer</PageTitle>
 
-@if (!this.Game.IsRunning)
+@if (!this.SceneInstanceProvider.IsGameRunning || this.sceneInstance == null)
 {
   <MudText Typo="@Typo.h3" GutterBottom="@true">Game is not running!</MudText>
 }
@@ -24,7 +22,7 @@ else
   <MudGrid Style="height: 100%;">
 
     <MudItem xs="4" Style="height: 100%;">
-      <StrideEnchanted.Explorer.Components.Elements.SceneExplorerTree.ComponentView SceneInstance="@this.sceneSystem.SceneInstance"
+      <StrideEnchanted.Explorer.Components.Elements.SceneExplorerTree.ComponentView SceneInstance="@this.sceneInstance"
                                                                                     @bind-Selected="@this.Selected" />
     </MudItem>
 
@@ -44,13 +42,13 @@ else
 }
 
 @code {
-  private SceneSystem sceneSystem = null!;
+  private SceneInstance? sceneInstance;
 
   private object? Selected { get; set; }
 
   protected override Task OnInitializedAsync()
   {
-    this.sceneSystem = this.Game.Services.GetSafeServiceAs<SceneSystem>();
+    this.sceneInstance = this.SceneInstanceProvider.GetSceneInstance();
     return base.OnInitializedAsync();
   }
 }
