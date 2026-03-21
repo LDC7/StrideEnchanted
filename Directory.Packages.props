@@ -4,10 +4,10 @@
     <StrideVersion>4.3.0.2507</StrideVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
-    <PackageVersion Include="DeterministicGuids" Version="1.0.9" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.2" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageVersion Include="coverlet.collector" Version="8.0.1" />
+    <PackageVersion Include="DeterministicGuids" Version="1.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.5" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
     <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="MudBlazor" Version="8.15.0" />
     <PackageVersion Include="Stride.Core.Assets.CompilerApp" Version="$(StrideVersion)" />
