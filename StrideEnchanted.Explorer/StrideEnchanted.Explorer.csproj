@@ -30,18 +30,29 @@
     <PackageId>StrideEnchanted.Explorer</PackageId>
     <Authors>Likhvar D.S.</Authors>
     <Description>Explorer for viewing the game state in runtime.</Description>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackExplorerStaticWebAssetManifests</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(UsePackageReferences)' == 'true'">
     <None Include="README.md" Pack="true" PackagePath="" />
-    <!-- endpoints/runtime static web assets -->
-    <None Include="$(TargetDir)$(AssemblyName).staticwebassets*.json"
-          Pack="true"
-          PackagePath="lib\$(TargetFramework)\" />
     <None Include="StrideEnchanted.Explorer.targets"
           Pack="true"
           PackagePath="buildTransitive\" />
     <PackageReference Include="StrideEnchanted.Host" />
   </ItemGroup>
+
+  <Target Name="PackExplorerStaticWebAssetManifests"
+          Condition="'$(UsePackageReferences)' == 'true'">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(TargetDir)$(AssemblyName).staticwebassets.runtime.json"
+                              PackagePath="buildTransitive\"
+                              BuildAction="None"
+                              Condition="Exists('$(TargetDir)$(AssemblyName).staticwebassets.runtime.json')" />
+      <TfmSpecificPackageFile Include="$(TargetDir)$(AssemblyName).staticwebassets.endpoints.json"
+                              PackagePath="buildTransitive\"
+                              BuildAction="None"
+                              Condition="Exists('$(TargetDir)$(AssemblyName).staticwebassets.endpoints.json')" />
+    </ItemGroup>
+  </Target>
 
 </Project>

@@ -1,6 +1,12 @@
-<Project>
+﻿<Project>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)..\lib\$(TargetFramework)\StrideEnchanted.Explorer.staticwebassets*.json">
+    <None Include="$(MSBuildThisFileDirectory)StrideEnchanted.Explorer.staticwebassets.runtime.json"
+          Condition="Exists('$(MSBuildThisFileDirectory)StrideEnchanted.Explorer.staticwebassets.runtime.json')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)StrideEnchanted.Explorer.staticwebassets.endpoints.json"
+          Condition="Exists('$(MSBuildThisFileDirectory)StrideEnchanted.Explorer.staticwebassets.endpoints.json')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
